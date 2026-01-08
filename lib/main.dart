@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:rakiz/screens/timer/screen.dart';
+import 'package:rakiz/screens/setting/screen.dart';
 import 'package:rakiz/ui/custom_text.dart';
 import 'package:google_fonts/google_fonts.dart';
 
