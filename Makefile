@@ -16,12 +16,11 @@ help:
 .PHONY: build
 img:
 	@echo "Generate icon launcher"
-	$(FLUTTER) pub get
-	dart run flutter_launcher_icons
-build:
-	@echo "Building Release APK (Split per ABI)..."
 	$(FLUTTER) clean
 	$(FLUTTER) pub get
+	dart run flutter_launcher_icons
+build: img
+	@echo "Building Release APK (Split per ABI)..."
 	$(BUILD_CMD)
 
 .PHONY: clean
