@@ -70,15 +70,15 @@ class PlayerControlUi extends StatelessWidget {
           onPressed: () => _handlePress(onReset),
           child: const Icon(Icons.replay, size: 25),
         ),
-        const SizedBox(width: 12),
-        FilledButton.tonal(
-          style: FilledButton.styleFrom(
-            minimumSize: const Size(20, 100),
-            shape: const StadiumBorder(),
-          ),
-          onPressed: () => _handlePress(onNext),
-          child: const Icon(Icons.skip_next, size: 25),
-        ),
+        // const SizedBox(width: 12),
+        // FilledButton.tonal(
+        //   style: FilledButton.styleFrom(
+        //     minimumSize: const Size(20, 100),
+        //     shape: const StadiumBorder(),
+        //   ),
+        //   onPressed: () => _handlePress(onNext),
+        //   child: const Icon(Icons.skip_next, size: 25),
+        // ),
       ],
     );
   }

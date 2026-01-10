@@ -1,23 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:rakiz/ui/custom_text.dart';
 
-class SettingScreen extends StatefulWidget {
-  const SettingScreen({super.key});
+class SettingScreen extends StatelessWidget {
+  final Function(ThemeMode) onThemeChanged;
 
-  @override
-  State<SettingScreen> createState() => _SettingScreenState();
-}
-
-class _SettingScreenState extends State<SettingScreen> {
-  bool isDarkMode = false;
+  const SettingScreen({super.key, required this.onThemeChanged});
 
   @override
   Widget build(BuildContext context) {
+    final isDark = Theme.of(context).brightness == Brightness.dark;
+
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
       body: ListView(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.all(16),
         children: [
-          // Appearance Section
           const Text(
             'Appearance',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -26,20 +23,16 @@ class _SettingScreenState extends State<SettingScreen> {
           Card(
             child: ListTile(
               title: const Text('Dark Mode'),
-              subtitle: const Text('Switch between light and dark theme'),
+              subtitle: const Text('Override system theme'),
               trailing: Switch(
-                value: isDarkMode,
+                value: isDark,
                 onChanged: (value) {
-                  setState(() {
-                    isDarkMode = value;
-                  });
+                  onThemeChanged(value ? ThemeMode.dark : ThemeMode.light);
                 },
               ),
             ),
           ),
           const SizedBox(height: 32),
-
-          // About Section
           const Text(
             'About',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -47,15 +40,14 @@ class _SettingScreenState extends State<SettingScreen> {
           const SizedBox(height: 12),
           Card(
             child: Padding(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.all(16),
               child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  _buildAboutRow('App Name', 'Rakiz'),
+                  _aboutRow('App Name', 'Rakiz'),
                   const SizedBox(height: 12),
-                  _buildAboutRow('Developer', 'Abdogouhmad'),
+                  _aboutRow('Developer', 'Abdogouhmad'),
                   const SizedBox(height: 12),
-                  _buildAboutRow('Version', '1.0.0'),
+                  _aboutRow('Version', '1.0.0'),
                 ],
               ),
             ),
@@ -65,12 +57,23 @@ class _SettingScreenState extends State<SettingScreen> {
     );
   }
 
-  Widget _buildAboutRow(String label, String value) {
+  Widget _aboutRow(String label, String value) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-        Text(label, style: const TextStyle(fontWeight: FontWeight.w500)),
-        Text(value, style: TextStyle(color: Colors.grey[600])),
+        UiText(
+          text: label,
+          type: UiTextType.titleSmall,
+          style: GoogleFonts.roboto(fontWeight: FontWeight.w500),
+        ),
+        UiText(
+          text: value,
+          type: UiTextType.labelMedium,
+          style: GoogleFonts.roboto(
+            fontWeight: FontWeight.w400,
+            color: Colors.grey[600],
+          ),
+        ),
       ],
     );
   }

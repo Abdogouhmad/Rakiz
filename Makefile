@@ -14,8 +14,14 @@ help:
 	@echo "  make run           - Run the app in release mode"
 
 .PHONY: build
+img:
+	@echo "Generate icon launcher"
+	$(FLUTTER) pub get
+	dart run flutter_launcher_icons
 build:
 	@echo "Building Release APK (Split per ABI)..."
+	$(FLUTTER) clean
+	$(FLUTTER) pub get
 	$(BUILD_CMD)
 
 .PHONY: clean
