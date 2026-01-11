@@ -37,6 +37,8 @@ dependencies:
   dynamic_color: ^1.8.1
   flutter_launcher_icons: ^0.14.4
   google_fonts: ^6.3.3
+  flutter_local_notifications: ^19.5.0
+  percent_indicator: ^4.2.5
 
 dev_dependencies:
   flutter_test:
