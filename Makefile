@@ -19,7 +19,7 @@ img:
 	$(FLUTTER) clean
 	$(FLUTTER) pub get
 	dart run flutter_launcher_icons
-build: img
+build: check img
 	@echo "Building Release APK (Split per ABI)..."
 	$(BUILD_CMD)
 
@@ -44,4 +44,9 @@ doctor:
 
 .PHONY: run
 run:
+	$(FLUTTER) clean
+	$(FLUTTER) pub get
 	$(FLUTTER) run -d linux
+
+check:
+	$(FLUTTER) analyze

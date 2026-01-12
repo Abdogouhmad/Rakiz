@@ -3,7 +3,7 @@ import 'package:flutter/foundation.dart';
 
 class TimerService {
   Timer? _timer;
-  int _remainingSeconds = 25 * 60; // Start at 25 minutes
+  int _remainingSeconds = 1 * 60; // Start at 25 minutes
 
   void startTimer({
     required Function(int) onTick,
@@ -28,7 +28,7 @@ class TimerService {
 
   void resetTimer() {
     stopTimer();
-    _remainingSeconds = 25 * 60;
+    _remainingSeconds = 1 * 60;
   }
 
   int get remainingSeconds => _remainingSeconds;
