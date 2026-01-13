@@ -1,15 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:rakiz/home.dart';
-// import 'package:rakiz/notification_service.dart';
 import 'package:rakiz/alarm.dart';
+
+final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-
-  //await NotificationService.init();
   await AlarmService.init();
-
   runApp(const MyApp());
 }
 
@@ -24,9 +22,7 @@ class _MyAppState extends State<MyApp> {
   ThemeMode _themeMode = ThemeMode.system;
 
   void _changeTheme(ThemeMode mode) {
-    setState(() {
-      _themeMode = mode;
-    });
+    setState(() => _themeMode = mode);
   }
 
   @override
@@ -35,19 +31,24 @@ class _MyAppState extends State<MyApp> {
       builder: (lightDynamic, darkDynamic) {
         const seed = Colors.deepPurple;
 
-        final lightScheme =
-            lightDynamic ?? ColorScheme.fromSeed(seedColor: seed);
-
-        final darkScheme =
-            darkDynamic ??
-            ColorScheme.fromSeed(seedColor: seed, brightness: Brightness.dark);
-
         return MaterialApp(
+          navigatorKey: rootNavigatorKey,
           title: 'Rakiz',
           debugShowCheckedModeBanner: false,
           themeMode: _themeMode,
-          theme: ThemeData(colorScheme: lightScheme, useMaterial3: true),
-          darkTheme: ThemeData(colorScheme: darkScheme, useMaterial3: true),
+          theme: ThemeData(
+            colorScheme: lightDynamic ?? ColorScheme.fromSeed(seedColor: seed),
+            useMaterial3: true,
+          ),
+          darkTheme: ThemeData(
+            colorScheme:
+                darkDynamic ??
+                ColorScheme.fromSeed(
+                  seedColor: seed,
+                  brightness: Brightness.dark,
+                ),
+            useMaterial3: true,
+          ),
           home: MyHomePage(onThemeChanged: _changeTheme),
         );
       },

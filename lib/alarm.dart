@@ -1,13 +1,15 @@
-import 'dart:io';
+import 'dart:io' show Platform;
 import 'dart:isolate';
 import 'dart:typed_data';
 import 'dart:ui';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
+import 'package:rakiz/screens/timer/widgets/alarmoverly.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:timezone/data/latest.dart' as tz;
+import 'package:rakiz/main.dart';
 
 /// Alarm service using android_alarm_manager_plus for reliable alarms
 class AlarmService {
@@ -41,6 +43,7 @@ class AlarmService {
     await _notificationPlugin.initialize(
       initSettings,
       onDidReceiveNotificationResponse: _onNotificationTap,
+      onDidReceiveBackgroundNotificationResponse: _onNotificationTap,
     );
 
     // Request notification permission for Android 13+
@@ -66,8 +69,9 @@ class AlarmService {
   }
 
   /// Handle notification tap - stop alarm
-  static void _onNotificationTap(NotificationResponse response) {
-    stopAlarm();
+  static void _onNotificationTap(NotificationResponse response) async {
+    await stopAlarm();
+    showOverlayIfAppOpen();
   }
 
   /// Schedule an alarm (exact time alarm)
@@ -280,5 +284,18 @@ class AlarmService {
 
     // Play alarm
     await playAlarmSound();
+  }
+
+  static void showOverlayIfAppOpen() {
+    final navigator = rootNavigatorKey.currentState;
+    if (navigator == null) return;
+
+    navigator.push(
+      PageRouteBuilder(
+        opaque: false,
+        barrierDismissible: false,
+        pageBuilder: (_, _, _) => const TimerOverlayScreen(),
+      ),
+    );
   }
 }
