@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rakiz/screens/timer/service/alarm.dart';
+import 'package:rakiz/screens/timer/service/timer.dart';
 import 'package:rakiz/screens/timer/widgets/player.dart';
 import 'package:rakiz/ui/custom_text.dart';
-import 'package:rakiz/alarm.dart';
-import 'service.dart';
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});

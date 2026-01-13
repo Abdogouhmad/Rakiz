@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:rakiz/home.dart';
-import 'package:rakiz/alarm.dart';
+import 'package:rakiz/screens/timer/service/alarm.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 

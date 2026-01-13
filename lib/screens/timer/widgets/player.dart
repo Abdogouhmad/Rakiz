@@ -22,9 +22,7 @@ class PlayerControlUi extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    Color? fillButtonColor = isPlaying
-        ? Colors.lightBlue[200]
-        : Theme.of(context).colorScheme.onInverseSurface;
+    Color? fillButtonColor = Theme.of(context).colorScheme.primary;
 
     return Row(
       mainAxisAlignment: MainAxisAlignment.center,
@@ -50,12 +48,13 @@ class PlayerControlUi extends StatelessWidget {
                         Icons.pause,
                         size: 25,
                         key: const ValueKey('p1'),
-                        color: Colors.grey[850],
+                        color: Colors.white,
                       )
                     : const Icon(
                         Icons.play_arrow,
                         size: 25,
                         key: ValueKey('p2'),
+                        color: Colors.white,
                       ),
               ),
             ),

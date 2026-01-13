@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:rakiz/alarm.dart';
+import 'package:rakiz/screens/timer/service/alarm.dart';
 
 class TimerOverlayScreen extends StatelessWidget {
   const TimerOverlayScreen({super.key});
@@ -13,7 +13,7 @@ class TimerOverlayScreen extends StatelessWidget {
         navigator.pop();
       },
       child: Scaffold(
-        backgroundColor: const Color(0xFF585A7D),
+        backgroundColor: Theme.of(context).colorScheme.primary,
         body: SafeArea(
           child: Center(
             child: Column(

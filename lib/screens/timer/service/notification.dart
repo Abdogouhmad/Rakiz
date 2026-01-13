@@ -46,9 +46,8 @@ class NotificationService {
   }
 
   /// Handle notification tap
-  static void _onNotificationTap(NotificationResponse response) {
-    // You can navigate or log here
-    // response.payload
+  static void _onNotificationTap(NotificationResponse response) async {
+    await cancelAll();
   }
 
   /// Show immediate notification (Android + Linux)
@@ -91,7 +90,7 @@ class NotificationService {
       playSound: true, // plays default device alarm sound
       enableVibration: true,
       vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
-      audioAttributesUsage: AudioAttributesUsage.alarm
+      audioAttributesUsage: AudioAttributesUsage.alarm,
     );
 
     await _plugin.zonedSchedule(
