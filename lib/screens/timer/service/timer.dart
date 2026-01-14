@@ -1,11 +1,14 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:rakiz/screens/timer/service/alarm.dart';
 
 class TimerService {
   Timer? _timer;
-  int _remainingSeconds = 5;
-  final int _initialSeconds = 5;
+  int _remainingSeconds = 5; // Default start
+  final int _initialSeconds = 5; // Configurable default
+
+  // Simple getters
+  int get remainingSeconds => _remainingSeconds;
+  bool get isRunning => _timer != null;
 
   void startTimer({
     required Function(int) onTick,
@@ -28,6 +31,7 @@ class TimerService {
     _timer = null;
   }
 
+  /// Resets timer back to initial state (e.g. 5 seconds)
   void resetTimer() {
     stopTimer();
     _remainingSeconds = _initialSeconds;
@@ -39,34 +43,4 @@ class TimerService {
     return '${minutes.toString().padLeft(2, '0')}:'
         '${seconds.toString().padLeft(2, '0')}';
   }
-
-  int get remainingSeconds => _remainingSeconds;
-  bool get isRunning => _timer != null;
-}
-
-/// Helper function to handle the logic between TimerService and AlarmService
-Future<void> theTimerToggler(
-  TimerService timerService,
-  VoidCallback onStateChange,
-) async {
-  if (timerService.isRunning) {
-    // Stop: Cancel Timer and Android Alarm
-    timerService.stopTimer();
-    await AlarmService.cancel(1);
-  } else {
-    // Start: Schedule Alarm first, then start local ticker
-    await AlarmService.scheduleAlarm(
-      id: 1,
-      title: 'Rakiz Timer Complete! ⏰',
-      body: 'Your timer has finished',
-      delay: Duration(seconds: timerService.remainingSeconds),
-    );
-
-    timerService.startTimer(
-      onTick: (_) => onStateChange(),
-      onFinished: () => onStateChange(),
-    );
-  }
-
-  onStateChange();
 }
