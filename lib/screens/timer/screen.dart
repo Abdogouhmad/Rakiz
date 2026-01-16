@@ -1,7 +1,9 @@
 import 'dart:async';
-import 'dart:io' show Platform;
+import 'package:alarm/alarm.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+
+// Assuming these exist in your project structure
 import 'package:rakiz/screens/timer/service/alarm.dart';
 import 'package:rakiz/screens/timer/service/timer.dart';
 import 'package:rakiz/screens/timer/widgets/player.dart';
@@ -15,20 +17,24 @@ class TimerScreen extends StatefulWidget {
 }
 
 class _TimerScreenState extends State<TimerScreen> {
+  // Assuming TimerService handles the visual countdown logic (ticks)
   final TimerService _timerService = TimerService();
-  StreamSubscription<bool>? _alarmSubscription;
+  StreamSubscription<AlarmSettings>? _alarmSubscription;
 
   int get _secondsLeft => _timerService.remainingSeconds;
 
   @override
   void initState() {
     super.initState();
-    
-    // Listen to alarm state changes
-    // When alarm stops (false), reset the timer
-    _alarmSubscription = AlarmService.alarmStateStream.listen((isPlaying) {
-      if (!isPlaying && mounted) {
-        _resetTimer();
+
+    // Listen to the Alarm package ring stream.
+    // This event fires when the alarm actually starts ringing.
+    _alarmSubscription = AlarmService.ringStream.listen((alarmSettings) {
+      if (alarmSettings.id == AlarmService.timerAlarmId) {
+        // You might want to show a dialog here or change UI state
+        debugPrint("Alarm is ringing!");
+        // We don't reset the timer here immediately, usually we wait
+        // for the user to click "Stop"
       }
     });
   }
@@ -42,21 +48,24 @@ class _TimerScreenState extends State<TimerScreen> {
 
   /// Format time from seconds to MM:SS
   String _formatTime(int totalSeconds) {
-    return _timerService.formatTime(totalSeconds);
+    // Fallback if TimerService doesn't have this method yet
+    final minutes = (totalSeconds ~/ 60).toString().padLeft(2, '0');
+    final seconds = (totalSeconds % 60).toString().padLeft(2, '0');
+    return '$minutes:$seconds';
   }
 
   /// Toggle timer start/stop
   Future<void> _toggleTimer() async {
     if (_timerService.isRunning) {
-      // Stop timer and cancel alarm
+      // 1. User pressed Pause/Stop
       _timerService.stopTimer();
-      await AlarmService.cancel(1);
-      
+      await AlarmService.stopAlarm();
+
       if (mounted) setState(() {});
       return;
     }
 
-    // Validate timer has time left
+    // 2. Validate timer has time left
     if (_secondsLeft <= 0) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -70,68 +79,49 @@ class _TimerScreenState extends State<TimerScreen> {
     }
 
     try {
-      // Schedule alarm
-      final scheduled = await AlarmService.scheduleAlarm(
-        id: 1,
-        title: 'Rakiz Timer Complete! ⏰',
-        body: 'Your timer has finished',
+      // 3. Schedule the Alarm (Background)
+      // We rely on the Alarm package to handle audio/notifications at the end
+      final success = await AlarmService.scheduleAlarm(
+        title: 'Rakiz Timer',
+        body: 'Time is up!',
         delay: Duration(seconds: _secondsLeft),
       );
 
-      if (!scheduled) {
-        throw Exception('Failed to schedule alarm');
+      if (!success) {
+        throw Exception('Failed to schedule system alarm');
       }
 
-      // Start timer
+      // 4. Start the Visual Timer (Foreground)
       _timerService.startTimer(
         onTick: (_) {
           if (mounted) setState(() {});
         },
-        onFinished: () async {
-          // Timer finished naturally
-          debugPrint('Timer finished');
-          
-          // On non-Android platforms, manually trigger notification
-          // Android handles this via AlarmManager background callback
-          if (!Platform.isAndroid) {
-            await AlarmService.showNotification();
-            await AlarmService.playAlarmSound();
-            AlarmService.showOverlayIfAppOpen();
-          } else {
-            // On Android, if app is in foreground, we can also show notification
-            // The background callback will handle it if app is killed/background
-            await AlarmService.playAlarmSound();
-            AlarmService.showOverlayIfAppOpen();
-          }
+        onFinished: () {
+          // Visual timer finished.
+          // We DO NOT play sound here manually.
+          // The AlarmService (via alarm package) handles the sound/notification automatically
+          // based on the schedule we set in step 3.
+          debugPrint('Visual timer finished');
+          if (mounted) setState(() {});
         },
       );
 
       if (mounted) setState(() {});
     } catch (e) {
       debugPrint('Error starting timer: $e');
-      
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to start timer: $e'),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 3),
-          ),
+          SnackBar(content: Text('Error: $e'), backgroundColor: Colors.red),
         );
       }
     }
   }
 
-  /// Reset timer to initial state
-  void _resetTimer() {
-    _timerService.resetTimer();
-    if (mounted) setState(() {});
-  }
-
-  /// Manual reset button handler
+  /// Reset timer and stop any ringing alarms
   Future<void> _onResetPressed() async {
-    await AlarmService.stopAlarm();
-    _resetTimer();
+    await AlarmService.stopAlarm(); // Stop audio if ringing
+    _timerService.resetTimer(); // Reset visual numbers
+    if (mounted) setState(() {});
   }
 
   @override
@@ -152,9 +142,9 @@ class _TimerScreenState extends State<TimerScreen> {
                   fontSize: 72,
                 ),
               ),
-              
+
               const SizedBox(height: 20),
-              
+
               // Status indicator
               if (_timerService.isRunning)
                 Container(
@@ -163,7 +153,7 @@ class _TimerScreenState extends State<TimerScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Colors.green.withValues(alpha: 0.2),
+                    color: Colors.green.withOpacity(0.2),
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -188,16 +178,16 @@ class _TimerScreenState extends State<TimerScreen> {
                     ],
                   ),
                 ),
-              
+
               const SizedBox(height: 40),
-              
+
               // Player controls
               PlayerControlUi(
                 isPlaying: _timerService.isRunning,
                 onPlayPause: _toggleTimer,
                 onReset: _onResetPressed,
                 onNext: () {
-                  // Add skip functionality if needed
+                  // Optional: Add logic to add +1 minute or similar
                 },
               ),
             ],

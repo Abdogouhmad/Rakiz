@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:dynamic_color/dynamic_color.dart';
 import 'package:rakiz/home.dart';
-import 'package:rakiz/screens/timer/service/alarm.dart';
+import 'package:alarm/alarm.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await AlarmService.init();
+  await Alarm.init();
+
   runApp(const MyApp());
 }
 

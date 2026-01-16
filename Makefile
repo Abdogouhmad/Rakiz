@@ -52,3 +52,8 @@ run:
 
 check:
 	$(FLUTTER) analyze
+
+phone:
+	$(FLUTTER) clean
+	$(FLUTTER) pub get
+	$(FLUTTER) run
