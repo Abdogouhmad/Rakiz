@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rakiz/ui/custom_text.dart';
+import 'package:rakiz/screens/setting/widget/import.dart';
 
 class SettingScreen extends StatelessWidget {
   final Function(ThemeMode) onThemeChanged;
@@ -15,66 +16,36 @@ class SettingScreen extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
-          const Text(
-            'Appearance',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: ListTile(
-              title: const Text('Dark Mode'),
-              subtitle: const Text('Override system theme'),
-              trailing: Switch(
-                value: isDark,
-                onChanged: (value) {
-                  onThemeChanged(value ? ThemeMode.dark : ThemeMode.light);
-                },
-              ),
-            ),
-          ),
+          const _SectionTitle(title: 'Appearance'),
+          const SizedBox(height: 8),
+          AppearanceCard(isDark: isDark, onThemeChanged: onThemeChanged),
           const SizedBox(height: 32),
-          const Text(
-            'About',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const SizedBox(height: 12),
-          Card(
-            child: Padding(
-              padding: const EdgeInsets.all(16),
-              child: Column(
-                children: [
-                  _aboutRow('App Name', 'Rakiz'),
-                  const SizedBox(height: 12),
-                  _aboutRow('Developer', 'Abdogouhmad'),
-                  const SizedBox(height: 12),
-                  _aboutRow('Version', '1.0.0'),
-                ],
-              ),
-            ),
-          ),
+          const _SectionTitle(title: 'About'),
+          const SizedBox(height: 8),
+          const AboutCard(),
+          const SizedBox(height: 24),
+          const SocialMediaSection(),
         ],
       ),
     );
   }
+}
 
-  Widget _aboutRow(String label, String value) {
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        UiText(
-          text: label,
-          type: UiTextType.titleSmall,
-          style: GoogleFonts.roboto(fontWeight: FontWeight.w500),
-        ),
-        UiText(
-          text: value,
-          type: UiTextType.labelMedium,
-          style: GoogleFonts.roboto(
-            fontWeight: FontWeight.w400,
-            color: Colors.grey[600],
-          ),
-        ),
-      ],
+/* -------------------------------------------------------------------------- */
+/*                                SUB WIDGETS                                 */
+/* -------------------------------------------------------------------------- */
+
+class _SectionTitle extends StatelessWidget {
+  final String title;
+
+  const _SectionTitle({required this.title});
+
+  @override
+  Widget build(BuildContext context) {
+    return UiText(
+      text: title,
+      type: UiTextType.titleLarge,
+      style: GoogleFonts.roboto(fontWeight: FontWeight.w600),
     );
   }
 }

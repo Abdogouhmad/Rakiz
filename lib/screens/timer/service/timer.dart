@@ -3,12 +3,19 @@ import 'package:flutter/foundation.dart';
 
 class TimerService {
   Timer? _timer;
-  int _remainingSeconds = 5; // Default start
-  final int _initialSeconds = 5; // Configurable default
+  int _remainingSeconds = 0;
+  int _initialSeconds = 0;
 
   // Simple getters
   int get remainingSeconds => _remainingSeconds;
   bool get isRunning => _timer != null;
+
+  /// Set the timer duration
+  void setDuration(int seconds) {
+    if (isRunning) return; // Don't allow changing duration while running
+    _initialSeconds = seconds;
+    _remainingSeconds = seconds;
+  }
 
   void startTimer({
     required Function(int) onTick,
@@ -31,15 +38,22 @@ class TimerService {
     _timer = null;
   }
 
-  /// Resets timer back to initial state (e.g. 5 seconds)
+  /// Resets timer back to initial state
   void resetTimer() {
     stopTimer();
     _remainingSeconds = _initialSeconds;
   }
 
   String formatTime(int totalSeconds) {
-    final minutes = totalSeconds ~/ 60;
+    final hours = totalSeconds ~/ 3600;
+    final minutes = (totalSeconds % 3600) ~/ 60;
     final seconds = totalSeconds % 60;
+
+    if (hours > 0) {
+      return '${hours.toString().padLeft(2, '0')}:'
+          '${minutes.toString().padLeft(2, '0')}:'
+          '${seconds.toString().padLeft(2, '0')}';
+    }
     return '${minutes.toString().padLeft(2, '0')}:'
         '${seconds.toString().padLeft(2, '0')}';
   }

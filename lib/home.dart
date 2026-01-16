@@ -36,19 +36,19 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
+      appBar: AppBar(
+        title: UiText(
+          text: _currentIndex == 0 ? "Timer" : "Settings",
+          textAlign: TextAlign.center,
+          type: UiTextType.headlineMedium,
+          style: GoogleFonts.robotoSlab(fontWeight: FontWeight.w600),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
         bottom: false,
         child: Column(
           children: [
-            Padding(
-              padding: const EdgeInsets.only(top: 16),
-              child: UiText(
-                text: "Focus",
-                textAlign: TextAlign.center,
-                type: UiTextType.headlineMedium,
-                style: GoogleFonts.robotoSlab(fontWeight: FontWeight.w600),
-              ),
-            ),
             Expanded(
               child: IndexedStack(
                 alignment: AlignmentGeometry.center,
