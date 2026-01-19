@@ -6,6 +6,7 @@ import 'package:rakiz/screens/timer/service/alarm.dart';
 import 'package:rakiz/screens/timer/service/timer.dart';
 import 'package:rakiz/screens/timer/widgets/durationpicker.dart';
 import 'package:rakiz/screens/timer/widgets/player.dart';
+import 'package:rakiz/screens/timer/widgets/tcircle.dart';
 import 'package:rakiz/ui/custom_text.dart';
 
 class TimerScreen extends StatefulWidget {
@@ -19,12 +20,16 @@ class _TimerScreenState extends State<TimerScreen> {
   final TimerService _timerService = TimerService();
   StreamSubscription<bool>? _alarmSubscription;
 
+  // Track total duration to calculate percentage
+  int _totalSeconds = 5 * 60;
+
   int get _secondsLeft => _timerService.remainingSeconds;
 
   @override
   void initState() {
     super.initState();
-    _timerService.setDuration(5 * 60);
+    // Initialize service with default time
+    _timerService.setDuration(_totalSeconds);
 
     _alarmSubscription = AlarmService.alarmStateStream.listen((isPlaying) {
       if (!isPlaying && mounted) {
@@ -50,15 +55,16 @@ class _TimerScreenState extends State<TimerScreen> {
     );
 
     if (selectedSeconds != null && selectedSeconds > 0) {
-      _timerService.setDuration(selectedSeconds);
-      if (mounted) setState(() {});
+      setState(() {
+        _totalSeconds = selectedSeconds; // Update total for percentage calc
+        _timerService.setDuration(selectedSeconds);
+      });
     }
   }
 
   /// Start / stop timer
   Future<void> _toggleTimer() async {
     if (_timerService.isRunning) {
-      // Just stop the timer, don't cancel alarm (it's not scheduled yet!)
       _timerService.stopTimer();
       if (mounted) setState(() {});
       return;
@@ -79,11 +85,7 @@ class _TimerScreenState extends State<TimerScreen> {
         if (mounted) setState(() {});
       },
       onFinished: () async {
-        // Schedule the alarm when timer finishes
-        await AlarmService.scheduleAlarm(
-          id: 1,
-          delay: Duration.zero, // Fire immediately
-        );
+        await AlarmService.scheduleAlarm(id: 1, delay: Duration.zero);
         AlarmService.playAlarmSound();
         AlarmService.showOverlayIfAppOpen();
         if (mounted) setState(() {});
@@ -95,90 +97,102 @@ class _TimerScreenState extends State<TimerScreen> {
 
   /// Reset timer and stop alarm if playing
   Future<void> _onResetPressed() async {
-    // Only stop alarm if it's actually playing
     if (AlarmService.isAlarmPlaying) {
       await AlarmService.stopAlarm();
     }
 
-    // If timer is running, cancel the scheduled alarm
     if (_timerService.isRunning) {
       await AlarmService.cancel(1);
     }
 
     _timerService.resetTimer();
+    // Also reset the service duration back to the last selected total
+    _timerService.setDuration(_totalSeconds);
+
     if (mounted) setState(() {});
   }
 
-  /// reset timer
+  /// reset timer helper
   void _resetTimer() {
     _timerService.resetTimer();
+    _timerService.setDuration(_totalSeconds);
     if (mounted) setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
+    final double size = context.screenWidth * 0.7;
+    final Color cireclColor = context.colorScheme.primary;
+
+    // Calculate percent: 1.0 (full) -> 0.0 (empty)
+    double percent = 0.0;
+    if (_totalSeconds > 0) {
+      percent = (_secondsLeft / _totalSeconds).clamp(0.0, 1.0);
+    }
+
     return Scaffold(
       body: SafeArea(
         child: Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              // Make timer text tappable to change duration
               GestureDetector(
                 onTap: _timerService.isRunning ? null : _showTimePicker,
-                // TODO: use circle around the timer formyted
-                child: UiText(
-                  text: _timerService.formatTime(_secondsLeft),
-                  type: UiTextType.displayLarge,
-                  style: GoogleFonts.robotoSlab(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 72,
-                    color: _timerService.isRunning
-                        ? context.colorScheme.onPrimaryContainer
-                        : context.colorScheme.primary,
+                child: TimerCircle(
+                  size: size,
+                  color: cireclColor,
+                  percent: percent,
+                  footer: _timerService.isRunning
+                      ? Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 16,
+                            vertical: 8,
+                          ),
+                          decoration: BoxDecoration(
+                            color: context.colorScheme.surfaceBright,
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              CircleAvatar(
+                                radius: 4,
+                                backgroundColor: context.colorScheme.primary,
+                              ),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Timer Running',
+                                style: TextStyle(
+                                  color: context.colorScheme.primary,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                              ),
+                            ],
+                          ),
+                        )
+                      : TextButton.icon(
+                          onPressed: _showTimePicker,
+                          icon: const Icon(Icons.edit),
+                          label: const Text('Set Duration'),
+                        ),
+                  child: UiText(
+                    text: _timerService.formatTime(_secondsLeft),
+                    type: UiTextType.displayLarge,
+                    style: GoogleFonts.robotoSlab(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 72,
+                      color: _timerService.isRunning
+                          ? context.colorScheme.onPrimaryContainer
+                          : context.colorScheme.primary,
+                    ),
                   ),
                 ),
               ),
 
-              const SizedBox(height: 20),
-
-              if (_timerService.isRunning)
-                Container(
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  decoration: BoxDecoration(
-                    color: context.colorScheme.surfaceBright,
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                  child: Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      CircleAvatar(
-                        radius: 4,
-                        backgroundColor: context.colorScheme.primary,
-                      ),
-                      const SizedBox(width: 8),
-                      Text(
-                        'Timer Running',
-                        style: TextStyle(
-                          color: context.colorScheme.primary,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ),
-                    ],
-                  ),
-                )
-              else
-                TextButton.icon(
-                  onPressed: _showTimePicker,
-                  icon: const Icon(Icons.edit),
-                  label: const Text('Set Duration'),
-                ),
-
+              // Timer Display with Indicator
               const SizedBox(height: 40),
 
+              // Player Controls
               PlayerControlUi(
                 isPlaying: _timerService.isRunning,
                 onPlayPause: _toggleTimer,
