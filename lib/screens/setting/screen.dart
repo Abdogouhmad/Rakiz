@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:rakiz/core/context.dart';
 import 'package:rakiz/ui/custom_text.dart';
 import 'package:rakiz/screens/setting/widget/import.dart';
 
@@ -10,7 +11,7 @@ class SettingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = Theme.of(context).brightness == Brightness.dark;
+    final isDark = context.brightness == Brightness.dark;
 
     return Scaffold(
       body: ListView(

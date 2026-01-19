@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:rakiz/core/context.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SocialMediaSection extends StatelessWidget {
@@ -47,7 +48,7 @@ class _SocialIcon extends StatelessWidget {
     return InkResponse(
       radius: 28,
       onTap: () => launchInBrowser(url),
-      child: FaIcon(icon, size: 26, color: Theme.of(context).colorScheme.primary),
+      child: FaIcon(icon, size: 30, color: context.colorScheme.primary),
     );
   }
 }

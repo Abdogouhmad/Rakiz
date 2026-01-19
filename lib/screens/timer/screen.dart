@@ -1,7 +1,7 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-
+import 'package:rakiz/core/context.dart';
 import 'package:rakiz/screens/timer/service/alarm.dart';
 import 'package:rakiz/screens/timer/service/timer.dart';
 import 'package:rakiz/screens/timer/widgets/durationpicker.dart';
@@ -40,11 +40,7 @@ class _TimerScreenState extends State<TimerScreen> {
     super.dispose();
   }
 
-  String _formatTime(int totalSeconds) {
-    return _timerService.formatTime(totalSeconds);
-  }
-
-  // Add method to pick time duration
+  /// method to pick time duration
   Future<void> _showTimePicker() async {
     if (_timerService.isRunning) return;
 
@@ -97,6 +93,7 @@ class _TimerScreenState extends State<TimerScreen> {
     if (mounted) setState(() {});
   }
 
+  /// Reset timer and stop alarm if playing
   Future<void> _onResetPressed() async {
     // Only stop alarm if it's actually playing
     if (AlarmService.isAlarmPlaying) {
@@ -112,6 +109,7 @@ class _TimerScreenState extends State<TimerScreen> {
     if (mounted) setState(() {});
   }
 
+  /// reset timer
   void _resetTimer() {
     _timerService.resetTimer();
     if (mounted) setState(() {});
@@ -128,16 +126,16 @@ class _TimerScreenState extends State<TimerScreen> {
               // Make timer text tappable to change duration
               GestureDetector(
                 onTap: _timerService.isRunning ? null : _showTimePicker,
+                // TODO: use circle around the timer formyted
                 child: UiText(
-                  text: _formatTime(_secondsLeft),
+                  text: _timerService.formatTime(_secondsLeft),
                   type: UiTextType.displayLarge,
-                  textAlign: TextAlign.center,
                   style: GoogleFonts.robotoSlab(
                     fontWeight: FontWeight.w600,
                     fontSize: 72,
                     color: _timerService.isRunning
-                        ? null
-                        : Theme.of(context).colorScheme.primary,
+                        ? context.colorScheme.onPrimaryContainer
+                        : context.colorScheme.primary,
                   ),
                 ),
               ),
@@ -151,7 +149,7 @@ class _TimerScreenState extends State<TimerScreen> {
                     vertical: 8,
                   ),
                   decoration: BoxDecoration(
-                    color: Theme.of(context).colorScheme.surfaceBright,
+                    color: context.colorScheme.surfaceBright,
                     borderRadius: BorderRadius.circular(20),
                   ),
                   child: Row(
@@ -159,13 +157,13 @@ class _TimerScreenState extends State<TimerScreen> {
                     children: [
                       CircleAvatar(
                         radius: 4,
-                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        backgroundColor: context.colorScheme.primary,
                       ),
                       const SizedBox(width: 8),
                       Text(
                         'Timer Running',
                         style: TextStyle(
-                          color: Theme.of(context).colorScheme.primary,
+                          color: context.colorScheme.primary,
                           fontWeight: FontWeight.w500,
                         ),
                       ),

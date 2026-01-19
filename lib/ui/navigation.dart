@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rakiz/core/context.dart';
 
 class NavBarItem {
   final Widget icon;
@@ -28,7 +29,7 @@ class ModernBottomNavBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final colorScheme = Theme.of(context).colorScheme;
+    final colorScheme = context.colorScheme;
 
     return Container(
       margin: const EdgeInsets.fromLTRB(50, 0, 50, 50),

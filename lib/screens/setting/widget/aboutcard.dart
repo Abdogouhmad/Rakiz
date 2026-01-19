@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rakiz/screens/setting/service/appinfo.dart';
 import 'package:rakiz/ui/custom_text.dart';
+import 'package:rakiz/core/context.dart';
 
 class AboutCard extends StatelessWidget {
   const AboutCard({super.key});
@@ -12,7 +13,7 @@ class AboutCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(5),
-        side: BorderSide(color: Theme.of(context).dividerColor),
+        side: BorderSide(color: context.theme.dividerColor),
       ),
       child: Padding(
         padding: const EdgeInsets.all(16),
@@ -48,9 +49,9 @@ class _AboutRow extends StatelessWidget {
         ),
         UiText(
           text: value,
-          type: UiTextType.labelMedium,
+          type: UiTextType.bodySmall,
           style: GoogleFonts.roboto(
-            color: Theme.of(context).textTheme.bodySmall?.color,
+            color: context.colorScheme.onSurfaceVariant,
           ),
         ),
       ],
@@ -74,7 +75,7 @@ class AppearanceCard extends StatelessWidget {
       elevation: 0,
       shape: RoundedRectangleBorder(
         borderRadius: BorderRadius.circular(5),
-        side: BorderSide(color: Theme.of(context).dividerColor),
+        side: BorderSide(color: context.theme.dividerColor),
       ),
       child: ListTile(
         leading: Icon(isDark ? Icons.dark_mode : Icons.light_mode, size: 22),
