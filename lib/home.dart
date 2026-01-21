@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rakiz/ui/custom_text.dart';
-import 'package:rakiz/ui/navigation.dart';
+import 'package:rakiz/ui/navbar.dart';
 import 'package:rakiz/screens/timer/screen.dart';
 import 'package:rakiz/screens/setting/screen.dart';
 
@@ -59,7 +59,7 @@ class _MyHomePageState extends State<MyHomePage> {
           ],
         ),
       ),
-      bottomNavigationBar: ModernBottomNavBar(
+      bottomNavigationBar: Navbar(
         items: _navItems,
         currentIndex: _currentIndex,
         onItemSelected: (index) {

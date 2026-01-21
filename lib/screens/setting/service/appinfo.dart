@@ -11,7 +11,7 @@ class Appinfo {
     if (_initialized) return;
 
     final pkg = await PackageInfo.fromPlatform();
-    _version = '${pkg.version}+${pkg.buildNumber}';
+    _version = pkg.version;
     _appname = pkg.appName;
     _initialized = true;
   }

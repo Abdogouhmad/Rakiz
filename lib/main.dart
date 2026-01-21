@@ -3,6 +3,7 @@ import 'package:dynamic_color/dynamic_color.dart';
 import 'package:rakiz/home.dart';
 import 'package:rakiz/screens/timer/service/alarm.dart';
 import 'package:rakiz/screens/setting/service/appinfo.dart';
+import 'package:flutter/services.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -29,6 +30,10 @@ class _MyAppState extends State<MyApp> {
 
   @override
   Widget build(BuildContext context) {
+    SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+      DeviceOrientation.portraitDown,
+    ]);
     return DynamicColorBuilder(
       builder: (lightDynamic, darkDynamic) {
         const seed = Colors.deepPurple;
