@@ -8,6 +8,7 @@ import 'package:rakiz/screens/timer/widgets/durationpicker.dart';
 import 'package:rakiz/screens/timer/widgets/player.dart';
 import 'package:rakiz/screens/timer/widgets/tcircle.dart';
 import 'package:rakiz/ui/custom_text.dart';
+import 'package:rakiz/screens/timer/service/notification.dart';
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
@@ -41,6 +42,7 @@ class _TimerScreenState extends State<TimerScreen> {
   @override
   void dispose() {
     _timerService.stopTimer();
+    NotificationService.cancel(1);
     _alarmSubscription?.cancel();
     super.dispose();
   }
@@ -66,6 +68,10 @@ class _TimerScreenState extends State<TimerScreen> {
   Future<void> _toggleTimer() async {
     if (_timerService.isRunning) {
       _timerService.stopTimer();
+
+      // Cancel scheduled notification
+      await NotificationService.cancel(1);
+
       if (mounted) setState(() {});
       return;
     }
@@ -80,14 +86,29 @@ class _TimerScreenState extends State<TimerScreen> {
       return;
     }
 
+    // 🔔 Schedule notification (background-safe)
+    await NotificationService.schedule(
+      id: 1,
+      title: 'Time’s up ⏰',
+      body: 'Your focus session has finished',
+      delay: Duration(seconds: _secondsLeft),
+    );
+    await NotificationService.notify(
+      id: 1,
+      title: 'Time’s up ⏰',
+      body: 'Your focus session has finished',
+    );
+
     _timerService.startTimer(
       onTick: (_) {
         if (mounted) setState(() {});
       },
       onFinished: () async {
+        // Alarm behavior (foreground)
         await AlarmService.scheduleAlarm(id: 1, delay: Duration.zero);
         AlarmService.playAlarmSound();
         AlarmService.showOverlayIfAppOpen();
+
         if (mounted) setState(() {});
       },
     );
@@ -97,16 +118,15 @@ class _TimerScreenState extends State<TimerScreen> {
 
   /// Reset timer and stop alarm if playing
   Future<void> _onResetPressed() async {
+    // Stop alarm sound if playing
     if (AlarmService.isAlarmPlaying) {
       await AlarmService.stopAlarm();
     }
 
-    if (_timerService.isRunning) {
-      await AlarmService.cancel(1);
-    }
+    // Cancel notification alarm
+    await NotificationService.cancel(1);
 
     _timerService.resetTimer();
-    // Also reset the service duration back to the last selected total
     _timerService.setDuration(_totalSeconds);
 
     if (mounted) setState(() {});

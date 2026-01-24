@@ -15,10 +15,13 @@ class NotificationService {
   static const String _channelName = 'Rakiz Timer';
   static const String _channelDesc = 'Pomodoro & timer notifications';
 
+  static bool _initialized = false;
+
   /// Initialize notifications
   static Future<void> init() async {
-    const androidSetup = AndroidInitializationSettings('@mipmap/launcher_icon');
+    if (_initialized) return;
 
+    const androidSetup = AndroidInitializationSettings('@mipmap/launcher_icon');
     const linuxSetup = LinuxInitializationSettings(defaultActionName: 'open');
 
     const initSettings = InitializationSettings(
@@ -32,22 +35,66 @@ class NotificationService {
       onDidReceiveBackgroundNotificationResponse: _onNotificationTap,
     );
 
-    /// Android 13+ permission
-    if (Platform.isAndroid) {
-      await _plugin
-          .resolvePlatformSpecificImplementation<
-            AndroidFlutterLocalNotificationsPlugin
-          >()
-          ?.requestNotificationsPermission();
+    // ---- Timezone init ----
+    tz.initializeTimeZones();
+
+    // Safer local timezone (especially for Morocco)
+    try {
+      tz.setLocalLocation(tz.getLocation('Africa/Casablanca'));
+    } catch (_) {
+      tz.setLocalLocation(tz.local);
     }
 
-    tz.initializeTimeZones();
-    // tz.setLocalLocation(tz.getLocation(DateTime.now().timeZoneName));
+    // ---- Android specific setup ----
+    if (Platform.isAndroid) {
+      final androidPlugin = _plugin
+          .resolvePlatformSpecificImplementation<
+            AndroidFlutterLocalNotificationsPlugin
+          >();
+
+      // Create notification channel (MANDATORY Android 8+)
+      await androidPlugin?.createNotificationChannel(
+        const AndroidNotificationChannel(
+          _channelId,
+          _channelName,
+          description: _channelDesc,
+          importance: Importance.max,
+          playSound: true,
+        ),
+      );
+
+      // Android 13+ permission
+      await androidPlugin?.requestNotificationsPermission();
+    }
+
+    _initialized = true;
   }
 
   /// Handle notification tap
-  static void _onNotificationTap(NotificationResponse response) async {
+  static Future<void> _onNotificationTap(NotificationResponse response) async {
+    // Only cleanup logic here (safe for background isolate)
     await cancelAll();
+  }
+
+  /// Android notification base config
+  static AndroidNotificationDetails _androidDetails({bool isAlarm = false}) {
+    return AndroidNotificationDetails(
+      _channelId,
+      _channelName,
+      channelDescription: _channelDesc,
+      importance: Importance.max,
+      priority: Priority.high,
+      category: isAlarm
+          ? AndroidNotificationCategory.alarm
+          : AndroidNotificationCategory.reminder,
+      fullScreenIntent: isAlarm, // alarm-style popup
+      playSound: true,
+      enableVibration: true,
+      vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
+      audioAttributesUsage: isAlarm
+          ? AudioAttributesUsage.alarm
+          : AudioAttributesUsage.notification,
+    );
   }
 
   /// Show immediate notification (Android + Linux)
@@ -57,14 +104,10 @@ class NotificationService {
     required String body,
   }) async {
     final details = NotificationDetails(
-      android: AndroidNotificationDetails(
-        _channelId,
-        _channelName,
-        channelDescription: _channelDesc,
-        importance: Importance.max,
-        priority: Priority.high,
+      android: _androidDetails(isAlarm: false),
+      linux: const LinuxNotificationDetails(
+        urgency: LinuxNotificationUrgency.critical,
       ),
-      linux: const LinuxNotificationDetails(),
     );
 
     await _plugin.show(id, title, body, details);
@@ -79,33 +122,28 @@ class NotificationService {
   }) async {
     if (!Platform.isAndroid) return;
 
-    // Single AndroidNotificationDetails for this alarm
-    final androidDetails = AndroidNotificationDetails(
-      _channelId,
-      _channelName,
-      channelDescription: _channelDesc,
-      importance: Importance.max,
-      priority: Priority.high,
-      fullScreenIntent: true, // 🔥 wakes device like an alarm
-      playSound: true, // plays default device alarm sound
-      enableVibration: true,
-      vibrationPattern: Int64List.fromList([0, 1000, 500, 1000]),
-      audioAttributesUsage: AudioAttributesUsage.alarm,
-    );
+    // Prevent duplicate alarms
+    await cancel(id);
+
+    final scheduleTime = tz.TZDateTime.now(tz.local).add(delay);
 
     await _plugin.zonedSchedule(
       id,
       title,
       body,
-      tz.TZDateTime.now(tz.local).add(delay),
-      NotificationDetails(android: androidDetails),
+      scheduleTime,
+      NotificationDetails(android: _androidDetails(isAlarm: true)),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 
   /// Cancel one notification
-  static Future<void> cancel(int id) => _plugin.cancel(id);
+  static Future<void> cancel(int id) async {
+    await _plugin.cancel(id);
+  }
 
   /// Cancel all notifications
-  static Future<void> cancelAll() => _plugin.cancelAll();
+  static Future<void> cancelAll() async {
+    await _plugin.cancelAll();
+  }
 }

@@ -4,12 +4,14 @@ import 'package:rakiz/home.dart';
 import 'package:rakiz/screens/timer/service/alarm.dart';
 import 'package:rakiz/screens/setting/service/appinfo.dart';
 import 'package:flutter/services.dart';
+import 'package:rakiz/screens/timer/service/notification.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AlarmService.init();
+  await NotificationService.init();
   await Appinfo.init();
   runApp(const MyApp());
 }
