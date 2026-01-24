@@ -52,3 +52,7 @@ run:
 
 check:
 	$(FLUTTER) analyze
+and:
+	$(FLUTTER) clean
+	$(FLUTTER) pub get
+	$(FLUTTER) run

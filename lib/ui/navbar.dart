@@ -38,6 +38,8 @@ class Navbar extends StatelessWidget {
         ? colorScheme.surface.withValues(alpha: 0.5)
         : colorScheme.primaryContainer;
 
+    final containerBk = isDark ? colorScheme.primaryContainer : colorScheme.surfaceContainerHigh;
+
     final activeColor = isDark ? colorScheme.onPrimaryContainer : colorScheme.primary;
     final inactiveColor = colorScheme.onSurfaceVariant;
 
@@ -46,8 +48,8 @@ class Navbar extends StatelessWidget {
       padding: const EdgeInsets.fromLTRB(25, 0, 25, 35),
       child: Container(
         decoration: BoxDecoration(
-          color: colorScheme.surfaceContainer, // Material 3 compliant background
-          borderRadius: BorderRadius.circular(12), // Rounded edges
+          color: containerBk,
+          borderRadius: BorderRadius.circular(100), // Rounded edges
           boxShadow: [
             BoxShadow(
               blurRadius: 20,
@@ -73,7 +75,7 @@ class Navbar extends StatelessWidget {
               // to guide our custom IconTheme below as well.
               activeColor: activeColor,
               color: inactiveColor, // Inactive color
-              tabBorderRadius: 12,              
+              tabBorderRadius: 100,
               iconSize: 24,
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
               duration: const Duration(milliseconds: 300),

@@ -3,12 +3,12 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rakiz/core/context.dart';
 import 'package:rakiz/screens/timer/service/alarm.dart';
+import 'package:rakiz/screens/timer/service/notification.dart';
 import 'package:rakiz/screens/timer/service/timer.dart';
 import 'package:rakiz/screens/timer/widgets/durationpicker.dart';
 import 'package:rakiz/screens/timer/widgets/player.dart';
 import 'package:rakiz/screens/timer/widgets/tcircle.dart';
 import 'package:rakiz/ui/custom_text.dart';
-import 'package:rakiz/screens/timer/service/notification.dart';
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
@@ -42,7 +42,6 @@ class _TimerScreenState extends State<TimerScreen> {
   @override
   void dispose() {
     _timerService.stopTimer();
-    NotificationService.cancel(1);
     _alarmSubscription?.cancel();
     super.dispose();
   }
@@ -69,9 +68,6 @@ class _TimerScreenState extends State<TimerScreen> {
     if (_timerService.isRunning) {
       _timerService.stopTimer();
 
-      // Cancel scheduled notification
-      await NotificationService.cancel(1);
-
       if (mounted) setState(() {});
       return;
     }
@@ -86,26 +82,22 @@ class _TimerScreenState extends State<TimerScreen> {
       return;
     }
 
-    // 🔔 Schedule notification (background-safe)
-    await NotificationService.schedule(
-      id: 1,
-      title: 'Time’s up ⏰',
-      body: 'Your focus session has finished',
-      delay: Duration(seconds: _secondsLeft),
-    );
-    await NotificationService.notify(
-      id: 1,
-      title: 'Time’s up ⏰',
-      body: 'Your focus session has finished',
-    );
-
     _timerService.startTimer(
       onTick: (_) {
         if (mounted) setState(() {});
       },
       onFinished: () async {
         // Alarm behavior (foreground)
+        // await AlarmService.scheduleAlarm(id: 1, delay: Duration.zero);
+        // AlarmService.playAlarmSound();
+        // AlarmService.showOverlayIfAppOpen();
+        // Android: real alarm + notification (from callback)
         await AlarmService.scheduleAlarm(id: 1, delay: Duration.zero);
+        await NotificationService.notify(
+          id: 1,
+          title: 'Time’s up ⏰',
+          body: 'Your focus session has finished',
+        );
         AlarmService.playAlarmSound();
         AlarmService.showOverlayIfAppOpen();
 
@@ -123,9 +115,6 @@ class _TimerScreenState extends State<TimerScreen> {
       await AlarmService.stopAlarm();
     }
 
-    // Cancel notification alarm
-    await NotificationService.cancel(1);
-
     _timerService.resetTimer();
     _timerService.setDuration(_totalSeconds);
 
@@ -140,11 +129,10 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   @override
+  @override
   Widget build(BuildContext context) {
-    final double size = context.screenWidth * 0.7;
-    final Color cireclColor = context.colorScheme.primary;
+    final Color circleColor = context.colorScheme.primary;
 
-    // Calculate percent: 1.0 (full) -> 0.0 (empty)
     double percent = 0.0;
     if (_totalSeconds > 0) {
       percent = (_secondsLeft / _totalSeconds).clamp(0.0, 1.0);
@@ -152,75 +140,89 @@ class _TimerScreenState extends State<TimerScreen> {
 
     return Scaffold(
       body: SafeArea(
-        child: Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              GestureDetector(
-                onTap: _timerService.isRunning ? null : _showTimePicker,
-                child: TimerCircle(
-                  size: size,
-                  color: cireclColor,
-                  percent: percent,
-                  footer: _timerService.isRunning
-                      ? Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
-                          ),
-                          decoration: BoxDecoration(
-                            color: context.colorScheme.surfaceBright,
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              CircleAvatar(
-                                radius: 4,
-                                backgroundColor: context.colorScheme.primary,
-                              ),
-                              const SizedBox(width: 8),
-                              Text(
-                                'Timer Running',
-                                style: TextStyle(
-                                  color: context.colorScheme.primary,
-                                  fontWeight: FontWeight.w500,
+        child: LayoutBuilder(
+          builder: (context, constraints) {
+            // Responsive circle size
+            final double circleSize = (constraints.maxWidth * 0.7).clamp(
+              220.0,
+              constraints.maxHeight * 0.6,
+            );
+
+            return SingleChildScrollView(
+              physics: const BouncingScrollPhysics(),
+              child: ConstrainedBox(
+                constraints: BoxConstraints(minHeight: constraints.maxHeight),
+                child: Center(
+                  child: Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      GestureDetector(
+                        onTap: _timerService.isRunning ? null : _showTimePicker,
+                        child: TimerCircle(
+                          size: circleSize,
+                          color: circleColor,
+                          percent: percent,
+                          footer: _timerService.isRunning
+                              ? Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 16,
+                                    vertical: 8,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: context.colorScheme.surfaceBright,
+                                    borderRadius: BorderRadius.circular(20),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      CircleAvatar(
+                                        radius: 4,
+                                        backgroundColor:
+                                            context.colorScheme.primary,
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Text(
+                                        'Timer Running',
+                                        style: TextStyle(
+                                          color: context.colorScheme.primary,
+                                          fontWeight: FontWeight.w500,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                )
+                              : TextButton.icon(
+                                  onPressed: _showTimePicker,
+                                  icon: const Icon(Icons.edit),
+                                  label: const Text('Set Duration'),
                                 ),
-                              ),
-                            ],
+                          child: UiText(
+                            text: _timerService.formatTime(_secondsLeft),
+                            style: GoogleFonts.robotoSlab(
+                              fontWeight: FontWeight.w600,
+                              fontSize: circleSize * 0.25,
+                              color: _timerService.isRunning
+                                  ? context.colorScheme.onPrimaryContainer
+                                  : context.colorScheme.primary,
+                            ),
                           ),
-                        )
-                      : TextButton.icon(
-                          onPressed: _showTimePicker,
-                          icon: const Icon(Icons.edit),
-                          label: const Text('Set Duration'),
                         ),
-                  child: UiText(
-                    text: _timerService.formatTime(_secondsLeft),
-                    type: UiTextType.displayLarge,
-                    style: GoogleFonts.robotoSlab(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 72,
-                      color: _timerService.isRunning
-                          ? context.colorScheme.onPrimaryContainer
-                          : context.colorScheme.primary,
-                    ),
+                      ),
+
+                      const SizedBox(height: 24),
+
+                      PlayerControlUi(
+                        isPlaying: _timerService.isRunning,
+                        onPlayPause: _toggleTimer,
+                        onReset: _onResetPressed,
+                        onNext: () {},
+                      ),
+                    ],
                   ),
                 ),
               ),
-
-              // Timer Display with Indicator
-              const SizedBox(height: 40),
-
-              // Player Controls
-              PlayerControlUi(
-                isPlaying: _timerService.isRunning,
-                onPlayPause: _toggleTimer,
-                onReset: _onResetPressed,
-                onNext: () {},
-              ),
-            ],
-          ),
+            );
+          },
         ),
       ),
     );

@@ -7,6 +7,7 @@ import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_ringtone_player/flutter_ringtone_player.dart';
 import 'package:rakiz/main.dart';
+import 'package:rakiz/screens/timer/service/notification.dart';
 import 'package:rakiz/screens/timer/widgets/alarmoverly.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
@@ -61,15 +62,24 @@ class AlarmService {
   /// Android background callback
   @pragma('vm:entry-point')
   static Future<void> _alarmCallback() async {
+    WidgetsFlutterBinding.ensureInitialized();
+
     final prefs = await SharedPreferences.getInstance();
     final isActive = prefs.getBool(_alarmActiveKey) ?? false;
-
     if (!isActive) return;
 
+    // Notify foreground isolate
     final SendPort? send = IsolateNameServer.lookupPortByName(_portName);
-
     send?.send('alarm_fired');
 
+    // 🔔 SHOW NOTIFICATION HERE (SYNCED)
+    await NotificationService.notify(
+      id: 1,
+      title: 'Time’s up ⏰',
+      body: 'Your focus session has finished',
+    );
+
+    // 🔊 Play alarm sound
     await _playAlarmInIsolate();
   }
 
