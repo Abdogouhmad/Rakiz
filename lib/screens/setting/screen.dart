@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:google_fonts/google_fonts.dart';
-import 'package:rakiz/core/context.dart';
-import 'package:rakiz/ui/custom_text.dart';
+import 'package:rakiz/screens/setting/service/appinfo.dart';
 import 'package:rakiz/screens/setting/widget/import.dart';
+import 'package:rakiz/screens/setting/screens/impo.dart';
 
 class SettingScreen extends StatelessWidget {
   final Function(ThemeMode) onThemeChanged;
@@ -11,42 +10,58 @@ class SettingScreen extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final isDark = context.brightness == Brightness.dark;
+    return ListView(
+      padding: const EdgeInsets.all(16),
+      children: [
+        SectionHeader(title: "General",),
+        SettingsTile(
+          icon: Icons.palette_rounded,
+          title: 'Appearance',
+          subtitle: 'Theme & colors',
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => AppearanceScreen(
+                  currentMode: Theme.of(context).brightness == Brightness.dark
+                      ? ThemeMode.dark
+                      : ThemeMode.light,
+                  onThemeChanged: onThemeChanged,
+                ),
+              ),
+            );
+          },
+        ),
+        SettingsTile(
+          icon: Icons.timer_rounded,
+          title: 'Timer',
+          subtitle: 'timer settings',
+          onTap: () {
+            Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => AppearanceScreen(
+                  currentMode: Theme.of(context).brightness == Brightness.dark
+                      ? ThemeMode.dark
+                      : ThemeMode.light,
+                  onThemeChanged: onThemeChanged,
+                ),
+              ),
+            );
+          },
+        ),
 
-    return Scaffold(
-      body: ListView(
-        padding: const EdgeInsets.all(16),
-        children: [
-          const _SectionTitle(title: 'Appearance'),
-          const SizedBox(height: 8),
-          AppearanceCard(isDark: isDark, onThemeChanged: onThemeChanged),
-          const SizedBox(height: 32),
-          const _SectionTitle(title: 'About'),
-          const SizedBox(height: 8),
-          const AboutCard(),
-          const SizedBox(height: 24),
-          const SocialMediaSection(),
-        ],
-      ),
-    );
-  }
-}
-
-/* -------------------------------------------------------------------------- */
-/*                                SUB WIDGETS                                 */
-/* -------------------------------------------------------------------------- */
-
-class _SectionTitle extends StatelessWidget {
-  final String title;
-
-  const _SectionTitle({required this.title});
-
-  @override
-  Widget build(BuildContext context) {
-    return UiText(
-      text: title,
-      type: UiTextType.titleLarge,
-      style: GoogleFonts.roboto(fontWeight: FontWeight.w600),
+        const SizedBox(height: 20),
+        SectionHeader(title: "Others",),
+        SettingsTile(
+          icon: Icons.info_rounded,
+          title: 'About',
+          subtitle: Appinfo.version,
+          onTap: () {
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const AboutScreen()));
+          },
+        ),
+      ],
     );
   }
 }
