@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:rakiz/screens/setting/service/appinfo.dart';
+import 'package:rakiz/screens/setting/widget/license.dart';
 import 'package:rakiz/screens/setting/widget/socialmedia.dart';
 import 'package:rakiz/ui/custom_text.dart';
 
@@ -139,28 +140,6 @@ class AboutScreen extends StatelessWidget {
                     ),
                   ],
                 ),
-                // const SizedBox(height: 12),
-                // Padding(
-                //   padding: EdgeInsetsGeometry.symmetric(horizontal: 20.0),
-                //   child: Row(
-                //     children: const [
-                //       SocialBubble(
-                //         icon: Icons.code,
-                //         url: "https://github.com/Abdogouhmad",
-                //       ),
-                //       SizedBox(width: 8),
-                //       SocialBubble(
-                //         icon: FontAwesomeIcons.envelope,
-                //         url: "mailto:gouhmad@hotmail.com",
-                //       ),
-                //       SizedBox(width: 8),
-                //       SocialBubble(
-                //         icon: Icons.web_asset_rounded,
-                //         url: "https://agouhmad.vercel.app/",
-                //       ),
-                //     ],
-                //   ),
-                // ),
               ],
             ),
           ),
@@ -174,14 +153,18 @@ class AboutScreen extends StatelessWidget {
             subtitle: 'Translate the app into your language',
           ),
           _ActionTile(
-            icon: Icons.star_rate_rounded,
-            title: 'Rate on Google Play',
-            subtitle: 'Liked the app? Write a review!',
-          ),
-          _ActionTile(
             icon: Icons.gavel_rounded,
             title: 'License',
             subtitle: 'GNU General Public License v3',
+            onTap: () {
+              showModalBottomSheet(
+                context: context,
+                isScrollControlled: true,
+                useRootNavigator: true,
+                backgroundColor: colors.primaryContainer,
+                builder: (context) => const License(),
+              );
+            },
           ),
         ],
       ),
@@ -213,11 +196,13 @@ class _ActionTile extends StatelessWidget {
   final IconData icon;
   final String title;
   final String subtitle;
+  final VoidCallback? onTap;
 
   const _ActionTile({
     required this.icon,
     required this.title,
     required this.subtitle,
+    this.onTap,
   });
 
   @override
@@ -226,17 +211,17 @@ class _ActionTile extends StatelessWidget {
     final colors = theme.colorScheme;
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
+      margin: const EdgeInsets.only(bottom: 15),
+      padding: const EdgeInsetsGeometry.symmetric(vertical: 5),
       decoration: BoxDecoration(
         color: colors.surface,
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(10),
       ),
       child: ListTile(
         leading: Icon(icon, color: colors.primary),
         title: Text(title),
         subtitle: Text(subtitle),
-        trailing: const Icon(Icons.open_in_new_rounded, size: 18),
-        onTap: () {},
+        onTap: onTap,
       ),
     );
   }
