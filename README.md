@@ -39,9 +39,9 @@ By leveraging Flutter’s optimization and modern Material 3 design, Rakiz deliv
 ## Download
 
 Rakiz is available on:
-- 🌐 Official Rakiz website
+- 🌐 [Official Rakiz website](https://rakizapp.vercel.app/)
 - 📦 F-Droid
-- 🐙 GitHub Releases
+- 🐙 [GitHub Releases](https://github.com/Abdogouhmad/Rakiz/releases/)
 
 ---
 
