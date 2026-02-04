@@ -5,6 +5,7 @@ import 'package:rakiz/screens/timer/service/alarm.dart';
 import 'package:rakiz/screens/setting/service/appinfo.dart';
 import 'package:flutter/services.dart';
 import 'package:rakiz/screens/timer/service/notification.dart';
+import 'package:rakiz/core/theme.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -13,22 +14,28 @@ Future<void> main() async {
   await AlarmService.init();
   await NotificationService.init();
   await Appinfo.init();
-  runApp(const MyApp());
+
+  // 1. Initialize the theme preference
+  final themePrefs = ThemePreferance();
+  await themePrefs.init();
+
+  runApp(MyApp(themePrefs: themePrefs));
 }
 
 class MyApp extends StatefulWidget {
-  const MyApp({super.key});
+  // Add this line
+  final ThemePreferance themePrefs;
+
+  // Update the constructor to include themePrefs
+  const MyApp({super.key, required this.themePrefs});
 
   @override
   State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
-  ThemeMode _themeMode = ThemeMode.system;
-
-  void _changeTheme(ThemeMode mode) {
-    setState(() => _themeMode = mode);
-  }
+  // You can REMOVE _themeMode and _changeTheme from here
+  // because we will use widget.themePrefs instead.
 
   @override
   Widget build(BuildContext context) {
@@ -36,29 +43,43 @@ class _MyAppState extends State<MyApp> {
       DeviceOrientation.portraitUp,
       DeviceOrientation.portraitDown,
     ]);
-    return DynamicColorBuilder(
-      builder: (lightDynamic, darkDynamic) {
-        const seed = Colors.deepPurple;
 
-        return MaterialApp(
-          navigatorKey: rootNavigatorKey,
-          title: 'Rakiz',
-          debugShowCheckedModeBanner: false,
-          themeMode: _themeMode,
-          theme: ThemeData(
-            colorScheme: lightDynamic ?? ColorScheme.fromSeed(seedColor: seed),
-            useMaterial3: true,
-          ),
-          darkTheme: ThemeData(
-            colorScheme:
-                darkDynamic ??
-                ColorScheme.fromSeed(
-                  seedColor: seed,
-                  brightness: Brightness.dark,
-                ),
-            useMaterial3: true,
-          ),
-          home: MyHomePage(onThemeChanged: _changeTheme),
+    // Use ListenableBuilder so the UI updates when the theme changes
+    return ListenableBuilder(
+      listenable: widget.themePrefs,
+      builder: (context, _) {
+        return DynamicColorBuilder(
+          builder: (lightDynamic, darkDynamic) {
+            const seed = Colors.deepPurple;
+
+            return MaterialApp(
+              navigatorKey: rootNavigatorKey,
+              title: 'Rakiz',
+              debugShowCheckedModeBanner: false,
+              // Use the mode from your service
+              themeMode: widget.themePrefs.mode,
+              theme: ThemeData(
+                colorScheme:
+                    lightDynamic ?? ColorScheme.fromSeed(seedColor: seed),
+                useMaterial3: true,
+              ),
+              darkTheme: ThemeData(
+                colorScheme:
+                    darkDynamic ??
+                    ColorScheme.fromSeed(
+                      seedColor: seed,
+                      brightness: Brightness.dark,
+                    ),
+                useMaterial3: true,
+              ),
+              // Pass the update function from the service down to the children
+              home: MyHomePage(
+                onThemeChanged: widget.themePrefs.updateTheme,
+                currentMode:
+                    widget.themePrefs.mode, // Added this to help settings
+              ),
+            );
+          },
         );
       },
     );

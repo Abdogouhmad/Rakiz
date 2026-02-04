@@ -3,7 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:rakiz/screens/setting/widget/import.dart';
 import 'package:rakiz/ui/custom_text.dart';
 
-class AppearanceScreen extends StatelessWidget {
+class AppearanceScreen extends StatefulWidget {
   final ThemeMode currentMode;
   final Function(ThemeMode) onThemeChanged;
 
@@ -12,22 +12,29 @@ class AppearanceScreen extends StatelessWidget {
     required this.currentMode,
     required this.onThemeChanged,
   });
-  // Column(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             UiText(
-  //               text: 'Appearance',
-  //               type: UiTextType.titleLarge,
-  //               style: GoogleFonts.roboto(fontWeight: FontWeight.w600),
-  //             ),
-  //             const SizedBox(height: 2),
-  //             UiText(
-  //               text: 'Theme preference',
-  //               type: UiTextType.bodySmall,
-  //               style: GoogleFonts.roboto(color: Colors.grey),
-  //             ),
-  //           ],
-  //         )
+
+  @override
+  State<AppearanceScreen> createState() => _AppearanceScreenState();
+}
+
+class _AppearanceScreenState extends State<AppearanceScreen> {
+  // We keep a local track of the selection to make the UI snappy
+  late ThemeMode _selectedMode;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedMode = widget.currentMode;
+  }
+
+  void _handleThemeChange(ThemeMode mode) {
+    setState(() {
+      _selectedMode = mode;
+    });
+    // Call the parent function to update the actual app theme and save to disk
+    widget.onThemeChanged(mode);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -54,18 +61,18 @@ class AppearanceScreen extends StatelessWidget {
           const SizedBox(height: 8),
           SelectionTile(
             title: 'System Default',
-            isSelected: currentMode == ThemeMode.system,
-            onTap: () => onThemeChanged(ThemeMode.system),
+            isSelected: _selectedMode == ThemeMode.system,
+            onTap: () => _handleThemeChange(ThemeMode.system),
           ),
           SelectionTile(
             title: 'Light Mode',
-            isSelected: currentMode == ThemeMode.light,
-            onTap: () => onThemeChanged(ThemeMode.light),
+            isSelected: _selectedMode == ThemeMode.light,
+            onTap: () => _handleThemeChange(ThemeMode.light),
           ),
           SelectionTile(
             title: 'Dark Mode',
-            isSelected: currentMode == ThemeMode.dark,
-            onTap: () => onThemeChanged(ThemeMode.dark),
+            isSelected: _selectedMode == ThemeMode.dark,
+            onTap: () => _handleThemeChange(ThemeMode.dark),
           ),
         ],
       ),

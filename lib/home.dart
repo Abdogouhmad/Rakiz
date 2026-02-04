@@ -7,8 +7,13 @@ import 'package:rakiz/screens/setting/screen.dart';
 
 class MyHomePage extends StatefulWidget {
   final Function(ThemeMode) onThemeChanged;
+  final ThemeMode currentMode;
 
-  const MyHomePage({super.key, required this.onThemeChanged});
+  const MyHomePage({
+    super.key,
+    required this.onThemeChanged,
+    required this.currentMode,
+  });
 
   @override
   State<MyHomePage> createState() => _MyHomePageState();
@@ -17,7 +22,9 @@ class MyHomePage extends StatefulWidget {
 class _MyHomePageState extends State<MyHomePage> {
   int _currentIndex = 0;
 
-  late final List<NavBarItem> _navItems = [
+  // Changed to a getter so that when currentMode changes in the parent,
+  // the SettingScreen inside this list also gets the new value.
+  List<NavBarItem> get _navItems => [
     NavBarItem(
       icon: const Icon(Icons.timer_outlined),
       activeIcon: const Icon(Icons.timer_outlined),
@@ -28,7 +35,10 @@ class _MyHomePageState extends State<MyHomePage> {
       icon: const Icon(Icons.settings_outlined),
       activeIcon: const Icon(Icons.settings_outlined),
       label: 'Settings',
-      screen: SettingScreen(onThemeChanged: widget.onThemeChanged),
+      screen: SettingScreen(
+        currentMode: widget.currentMode,
+        onThemeChanged: widget.onThemeChanged,
+      ),
     ),
   ];
 
@@ -47,16 +57,10 @@ class _MyHomePageState extends State<MyHomePage> {
       ),
       body: SafeArea(
         bottom: false,
-        child: Column(
-          children: [
-            Expanded(
-              child: IndexedStack(
-                alignment: AlignmentGeometry.center,
-                index: _currentIndex,
-                children: _navItems.map((e) => e.screen).toList(),
-              ),
-            ),
-          ],
+        child: IndexedStack(
+          alignment: AlignmentGeometry.center,
+          index: _currentIndex,
+          children: _navItems.map((e) => e.screen).toList(),
         ),
       ),
       bottomNavigationBar: Navbar(

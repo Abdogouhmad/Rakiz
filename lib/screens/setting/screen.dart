@@ -5,52 +5,66 @@ import 'package:rakiz/screens/setting/screens/impo.dart';
 
 class SettingScreen extends StatelessWidget {
   final Function(ThemeMode) onThemeChanged;
+  final ThemeMode currentMode;
 
-  const SettingScreen({super.key, required this.onThemeChanged});
+  const SettingScreen({
+    super.key,
+    required this.onThemeChanged,
+    required this.currentMode,
+  });
+
+  // Helper to convert ThemeMode to a user-friendly string
+  String _getThemeName(ThemeMode mode) {
+    switch (mode) {
+      case ThemeMode.system:
+        return 'System Default';
+      case ThemeMode.light:
+        return 'Light Mode';
+      case ThemeMode.dark:
+        return 'Dark Mode';
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        SectionHeader(title: "General",),
+        const SectionHeader(title: "General"),
         SettingsTile(
           icon: Icons.palette_rounded,
           title: 'Appearance',
-          subtitle: 'Theme & colors',
+          // UI is now interactive by showing the actual current selection here
+          subtitle: 'Theme: ${_getThemeName(currentMode)}',
           onTap: () {
             Navigator.of(context).push(
               MaterialPageRoute(
                 builder: (_) => AppearanceScreen(
-                  currentMode: Theme.of(context).brightness == Brightness.dark
-                      ? ThemeMode.dark
-                      : ThemeMode.light,
+                  currentMode: currentMode,
                   onThemeChanged: onThemeChanged,
                 ),
               ),
             );
           },
         ),
-        SettingsTile(
-          icon: Icons.timer_rounded,
-          title: 'Timer',
-          subtitle: 'timer settings',
-          onTap: () {
-            Navigator.of(context).push(
-              MaterialPageRoute(
-                builder: (_) => AppearanceScreen(
-                  currentMode: Theme.of(context).brightness == Brightness.dark
-                      ? ThemeMode.dark
-                      : ThemeMode.light,
-                  onThemeChanged: onThemeChanged,
-                ),
-              ),
-            );
-          },
-        ),
-
+        // SettingsTile(
+        //   icon: Icons.timer_rounded,
+        //   title: 'Timer',
+        //   subtitle: 'Timer settings',
+        //   onTap: () {
+        //     // Update this to point to your actual Timer settings screen when ready
+        //     Navigator.of(context).push(
+        //       MaterialPageRoute(
+        //         builder: (_) => AppearanceScreen(
+        //           currentMode: currentMode,
+        //           onThemeChanged: onThemeChanged,
+        //         ),
+        //       ),
+        //     );
+        //   },
+        // ),
         const SizedBox(height: 20),
-        SectionHeader(title: "Others",),
+        const SectionHeader(title: "Others"),
         SettingsTile(
           icon: Icons.info_rounded,
           title: 'About',
