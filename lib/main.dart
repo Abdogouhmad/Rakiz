@@ -6,6 +6,8 @@ import 'package:rakiz/screens/setting/service/appinfo.dart';
 import 'package:flutter/services.dart';
 import 'package:rakiz/screens/timer/service/notification.dart';
 import 'package:rakiz/core/theme.dart';
+import 'package:provider/provider.dart';
+import 'package:rakiz/screens/setting/screens/timersettings/timer_config.dart';
 
 final GlobalKey<NavigatorState> rootNavigatorKey = GlobalKey<NavigatorState>();
 
@@ -18,8 +20,13 @@ Future<void> main() async {
   // 1. Initialize the theme preference
   final themePrefs = ThemePreferance();
   await themePrefs.init();
-
-  runApp(MyApp(themePrefs: themePrefs));
+  runApp(
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => TimerConfig())],
+      child: MyApp(themePrefs: themePrefs),
+    ),
+  );
+  // runApp(MyApp(themePrefs: themePrefs));
 }
 
 class MyApp extends StatefulWidget {

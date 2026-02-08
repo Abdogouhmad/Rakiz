@@ -37,9 +37,12 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+    final colors = theme.colorScheme;
+
     return Scaffold(
+      backgroundColor: colors.surfaceContainerLowest,
       appBar: AppBar(
-        automaticallyImplyLeading: true,
         elevation: 0,
         backgroundColor: Colors.transparent,
         leading: const BackButton(),
@@ -49,16 +52,16 @@ class _AppearanceScreenState extends State<AppearanceScreen> {
         children: [
           UiText(
             text: 'Appearance',
-            type: UiTextType.titleLarge,
-            style: GoogleFonts.roboto(fontWeight: FontWeight.w600),
+            type: UiTextType.headlineLarge,
+            style: GoogleFonts.roboto(fontWeight: FontWeight.w700),
           ),
-          const SizedBox(height: 2),
+          const SizedBox(height: 4),
           UiText(
             text: 'Theme preference',
-            type: UiTextType.bodySmall,
-            style: GoogleFonts.roboto(color: Colors.grey),
+            type: UiTextType.bodyMedium,
+            style: GoogleFonts.roboto(color: colors.onSurfaceVariant),
           ),
-          const SizedBox(height: 8),
+          const SizedBox(height: 20),
           SelectionTile(
             title: 'System Default',
             isSelected: _selectedMode == ThemeMode.system,

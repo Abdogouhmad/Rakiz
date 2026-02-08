@@ -1,11 +1,13 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:provider/provider.dart';
+
 import 'package:rakiz/core/context.dart';
+import 'package:rakiz/screens/setting/screens/timersettings/timer_config.dart';
 import 'package:rakiz/screens/timer/service/alarm.dart';
 import 'package:rakiz/screens/timer/service/notification.dart';
 import 'package:rakiz/screens/timer/service/timer.dart';
-import 'package:rakiz/screens/timer/widgets/durationpicker.dart';
 import 'package:rakiz/screens/timer/widgets/player.dart';
 import 'package:rakiz/screens/timer/widgets/tcircle.dart';
 import 'package:rakiz/ui/custom_text.dart';
@@ -21,22 +23,39 @@ class _TimerScreenState extends State<TimerScreen> {
   final TimerService _timerService = TimerService();
   StreamSubscription<bool>? _alarmSubscription;
 
-  // Track total duration to calculate percentage
-  int _totalSeconds = 5 * 60;
+  int _totalSeconds = 0;
 
   int get _secondsLeft => _timerService.remainingSeconds;
 
   @override
   void initState() {
     super.initState();
-    // Initialize service with default time
-    _timerService.setDuration(_totalSeconds);
-
     _alarmSubscription = AlarmService.alarmStateStream.listen((isPlaying) {
       if (!isPlaying && mounted) {
         _resetTimer();
       }
     });
+  }
+
+  // ---------------------------
+  // Lifecycle: Listen for Config Changes
+  // ---------------------------
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+
+    // 1. Watch the config for changes
+    final config = context.watch<TimerConfig>();
+
+    // 2. Calculate what the duration *should* be based on current settings
+    final configDurationInSeconds = config.currentDurationMinutes * 60;
+
+    // 3. If the timer is NOT running and the duration has changed, update immediately.
+    //    This ensures settings changes are reflected instantly without a reset,
+    //    but prevents resetting a timer that is actively counting down.
+    if (!_timerService.isRunning && _totalSeconds != configDurationInSeconds) {
+      _applyConfig(config);
+    }
   }
 
   @override
@@ -46,60 +65,67 @@ class _TimerScreenState extends State<TimerScreen> {
     super.dispose();
   }
 
-  /// method to pick time duration
-  Future<void> _showTimePicker() async {
-    if (_timerService.isRunning) return;
+  // ---------------------------
+  // Apply settings → timer
+  // ---------------------------
+  void _applyConfig(TimerConfig config) {
+    final seconds = config.currentDurationMinutes * 60;
 
-    final int? selectedSeconds = await showDurationPicker(
-      context: context,
-      initialSeconds: _secondsLeft,
-    );
+    _totalSeconds = seconds;
+    _timerService
+      ..resetTimer()
+      ..setDuration(seconds);
 
-    if (selectedSeconds != null && selectedSeconds > 0) {
-      setState(() {
-        _totalSeconds = selectedSeconds; // Update total for percentage calc
-        _timerService.setDuration(selectedSeconds);
-      });
-    }
+    // Force a rebuild just in case this was called outside the build phase
+    // (though usually unnecessary inside didChangeDependencies, it's safer for async logic)
+    // We check mounted to be safe.
+    // Note: We avoid setState during build, but didChangeDependencies runs before build.
   }
 
-  /// Start / stop timer
+  // ---------------------------
+  // Start / Stop timer
+  // ---------------------------
   Future<void> _toggleTimer() async {
+    final config = context.read<TimerConfig>();
+
     if (_timerService.isRunning) {
       _timerService.stopTimer();
-
       if (mounted) setState(() {});
       return;
     }
 
-    if (_secondsLeft <= 0) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('Please set a timer duration first'),
-          duration: Duration(seconds: 2),
-        ),
-      );
-      return;
-    }
+    if (_secondsLeft <= 0) return;
 
     _timerService.startTimer(
       onTick: (_) {
         if (mounted) setState(() {});
       },
       onFinished: () async {
-        // Alarm behavior (foreground)
-        // await AlarmService.scheduleAlarm(id: 1, delay: Duration.zero);
-        // AlarmService.playAlarmSound();
-        // AlarmService.showOverlayIfAppOpen();
-        // Android: real alarm + notification (from callback)
         await AlarmService.scheduleAlarm(id: 1, delay: Duration.zero);
         await NotificationService.notify(
           id: 1,
           title: 'Time’s up ⏰',
-          body: 'Your focus session has finished',
+          body: 'Session finished',
         );
+
         AlarmService.playAlarmSound();
         AlarmService.showOverlayIfAppOpen();
+
+        // ---------------------------
+        // Cycle logic
+        // ---------------------------
+        if (config.currentMode == TimerMode.focus) {
+          config.onFocusCompleted();
+        } else {
+          config.setMode(TimerMode.focus);
+        }
+
+        // Apply new cycle config
+        _applyConfig(config);
+
+        if (config.autoStartNext) {
+          _toggleTimer();
+        }
 
         if (mounted) setState(() {});
       },
@@ -108,29 +134,30 @@ class _TimerScreenState extends State<TimerScreen> {
     if (mounted) setState(() {});
   }
 
-  /// Reset timer and stop alarm if playing
+  // ---------------------------
+  // Reset helpers
+  // ---------------------------
   Future<void> _onResetPressed() async {
-    // Stop alarm sound if playing
+    final config = context.read<TimerConfig>();
+
     if (AlarmService.isAlarmPlaying) {
       await AlarmService.stopAlarm();
     }
 
-    _timerService.resetTimer();
-    _timerService.setDuration(_totalSeconds);
+    _applyConfig(config);
 
     if (mounted) setState(() {});
   }
 
-  /// reset timer helper
   void _resetTimer() {
-    _timerService.resetTimer();
-    _timerService.setDuration(_totalSeconds);
+    final config = context.read<TimerConfig>();
+    _applyConfig(config);
     if (mounted) setState(() {});
   }
 
-  @override
   @override
   Widget build(BuildContext context) {
+    final config = context.watch<TimerConfig>();
     final Color circleColor = context.colorScheme.primary;
 
     double percent = 0.0;
@@ -138,88 +165,99 @@ class _TimerScreenState extends State<TimerScreen> {
       percent = (_secondsLeft / _totalSeconds).clamp(0.0, 1.0);
     }
 
+    String modeLabel = switch (config.currentMode) {
+      TimerMode.focus => 'Focus',
+      TimerMode.shortBreak => 'Short Break',
+      TimerMode.longBreak => 'Long Break',
+    };
+
     return Scaffold(
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
-            // Responsive circle size
             final double circleSize = (constraints.maxWidth * 0.7).clamp(
               220.0,
               constraints.maxHeight * 0.6,
             );
 
-            return SingleChildScrollView(
-              physics: const BouncingScrollPhysics(),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(minHeight: constraints.maxHeight),
-                child: Center(
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      GestureDetector(
-                        onTap: _timerService.isRunning ? null : _showTimePicker,
-                        child: TimerCircle(
-                          size: circleSize,
-                          color: circleColor,
-                          percent: percent,
-                          footer: _timerService.isRunning
-                              ? Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    horizontal: 16,
-                                    vertical: 8,
-                                  ),
-                                  decoration: BoxDecoration(
-                                    color: context.colorScheme.surfaceBright,
-                                    borderRadius: BorderRadius.circular(20),
-                                  ),
-                                  child: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      CircleAvatar(
-                                        radius: 4,
-                                        backgroundColor:
-                                            context.colorScheme.primary,
-                                      ),
-                                      const SizedBox(width: 8),
-                                      Text(
-                                        'Timer Running',
-                                        style: TextStyle(
-                                          color: context.colorScheme.primary,
-                                          fontWeight: FontWeight.w500,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                )
-                              : TextButton.icon(
-                                  onPressed: _showTimePicker,
-                                  icon: const Icon(Icons.edit),
-                                  label: const Text('Set Duration'),
-                                ),
-                          child: UiText(
-                            text: _timerService.formatTime(_secondsLeft),
-                            style: GoogleFonts.robotoSlab(
-                              fontWeight: FontWeight.w600,
-                              fontSize: circleSize * 0.25,
-                              color: _timerService.isRunning
-                                  ? context.colorScheme.onPrimaryContainer
-                                  : context.colorScheme.primary,
-                            ),
-                          ),
-                        ),
-                      ),
-
-                      const SizedBox(height: 24),
-
-                      PlayerControlUi(
-                        isPlaying: _timerService.isRunning,
-                        onPlayPause: _toggleTimer,
-                        onReset: _onResetPressed,
-                        onNext: () {},
-                      ),
-                    ],
+            return Center(
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  // ---------------------------
+                  // Mode label
+                  // ---------------------------
+                  Text(
+                    modeLabel,
+                    style: GoogleFonts.roboto(
+                      fontSize: 18,
+                      fontWeight: FontWeight.w600,
+                      color: context.colorScheme.onSurfaceVariant,
+                    ),
                   ),
-                ),
+
+                  const SizedBox(height: 16),
+
+                  // ---------------------------
+                  // Timer circle
+                  // ---------------------------
+                  TimerCircle(
+                    size: circleSize,
+                    color: circleColor,
+                    percent: percent,
+                    footer: _timerService.isRunning
+                        ? Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 16,
+                              vertical: 8,
+                            ),
+                            decoration: BoxDecoration(
+                              color: context.colorScheme.surfaceBright,
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                CircleAvatar(
+                                  radius: 4,
+                                  backgroundColor: context.colorScheme.primary,
+                                ),
+                                const SizedBox(width: 8),
+                                Text(
+                                  'Timer Running',
+                                  style: TextStyle(
+                                    color: context.colorScheme.primary,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        : const SizedBox.shrink(),
+                    child: UiText(
+                      text: _timerService.formatTime(_secondsLeft),
+                      style: GoogleFonts.robotoSlab(
+                        fontWeight: FontWeight.w600,
+                        fontSize: circleSize * 0.25,
+                        color: _timerService.isRunning
+                            ? context.colorScheme.onPrimaryContainer
+                            : context.colorScheme.primary,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // ---------------------------
+                  // Controls
+                  // ---------------------------
+                  PlayerControlUi(
+                    isPlaying: _timerService.isRunning,
+                    onPlayPause: _toggleTimer,
+                    onReset: _onResetPressed,
+                    onNext: () {},
+                  ),
+                ],
               ),
             );
           },

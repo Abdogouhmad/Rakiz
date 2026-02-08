@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:rakiz/screens/setting/screens/timersettings/timersetting.dart';
 import 'package:rakiz/screens/setting/service/appinfo.dart';
 import 'package:rakiz/screens/setting/widget/import.dart';
 import 'package:rakiz/screens/setting/screens/impo.dart';
@@ -47,22 +48,17 @@ class SettingScreen extends StatelessWidget {
             );
           },
         ),
-        // SettingsTile(
-        //   icon: Icons.timer_rounded,
-        //   title: 'Timer',
-        //   subtitle: 'Timer settings',
-        //   onTap: () {
-        //     // Update this to point to your actual Timer settings screen when ready
-        //     Navigator.of(context).push(
-        //       MaterialPageRoute(
-        //         builder: (_) => AppearanceScreen(
-        //           currentMode: currentMode,
-        //           onThemeChanged: onThemeChanged,
-        //         ),
-        //       ),
-        //     );
-        //   },
-        // ),
+        SettingsTile(
+          icon: Icons.timer_rounded,
+          title: 'Timer',
+          subtitle: 'Timer settings',
+          onTap: () {
+            // Update this to point to your actual Timer settings screen when ready
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => TimerSettingScreen()));
+          },
+        ),
         const SizedBox(height: 20),
         const SectionHeader(title: "Others"),
         SettingsTile(
