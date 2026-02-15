@@ -1,5 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
+import 'package:rakiz/ui/custom_text.dart';
 
 class HelperUI {
   /// ---------------------------
@@ -12,31 +14,33 @@ class HelperUI {
     required VoidCallback onTap,
   }) {
     final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return GestureDetector(
       onTap: onTap,
       child: Container(
-        height: 110,
+        height: 100,
         decoration: BoxDecoration(
           color: colors.secondaryContainer.withValues(alpha: 0.3),
-          borderRadius: BorderRadius.circular(16),
+          borderRadius: BorderRadius.circular(8),
         ),
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Text(
-              title,
-              style: textTheme.bodySmall?.copyWith(
-                fontWeight: FontWeight.w600,
+            UiText(
+              text: title,
+              type: UiTextType.bodySmall,
+              style: GoogleFonts.roboto(
                 color: colors.onSurfaceVariant,
+                fontWeight: FontWeight.w600,
               ),
             ),
             const SizedBox(height: 8),
-            Text(
-              "$value",
-              style: textTheme.headlineMedium?.copyWith(
-                fontWeight: FontWeight.bold,
+            UiText(
+              text: "$value",
+              type: UiTextType.headlineMedium,
+              style: GoogleFonts.roboto(
+                color: colors.onSurfaceVariant,
+                fontWeight: FontWeight.w700,
               ),
             ),
           ],
@@ -56,24 +60,34 @@ class HelperUI {
     required ValueChanged<bool> onChanged,
   }) {
     final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
 
     return ListTile(
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
-      title: Text(
-        title,
-        style: textTheme.titleMedium?.copyWith(fontWeight: FontWeight.bold),
+      contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 8),
+      onTap: () => onChanged(!value),
+      title: UiText(
+        text: title,
+        type: UiTextType.titleMedium,
+        style: GoogleFonts.roboto(fontWeight: FontWeight.w700),
       ),
-      subtitle: Text(
-        subtitle,
-        style: textTheme.bodySmall?.copyWith(color: colors.onSurfaceVariant),
+      subtitle: UiText(
+        text: subtitle,
+        type: UiTextType.labelMedium,
+        style: GoogleFonts.roboto(color: colors.onSurfaceVariant),
       ),
       trailing: Transform.scale(
-        scale: 0.8,
-        child: CupertinoSwitch(
+        scale: 0.9,
+        child: Switch(
           value: value,
-          activeTrackColor: colors.primary,
           onChanged: onChanged,
+          activeTrackColor: colors.primary,
+          inactiveThumbColor: colors.outline,
+          inactiveTrackColor: colors.surfaceContainerHighest,
+          thumbColor: WidgetStateProperty.resolveWith<Color>((states) {
+            if (states.contains(WidgetState.selected)) {
+              return colors.onPrimary;
+            }
+            return colors.outline;
+          }),
         ),
       ),
     );
@@ -91,7 +105,7 @@ class HelperUI {
     return Container(
       decoration: BoxDecoration(
         color: colors.secondaryContainer.withValues(alpha: 0.3),
-        borderRadius: BorderRadius.circular(20),
+        borderRadius: BorderRadius.circular(8),
       ),
       child: child,
     );
@@ -113,7 +127,7 @@ class HelperUI {
       context: context,
       backgroundColor: colors.surface,
       shape: const RoundedRectangleBorder(
-        borderRadius: BorderRadius.vertical(top: Radius.circular(20)),
+        borderRadius: BorderRadius.vertical(top: Radius.circular(10)),
       ),
       builder: (_) {
         return SizedBox(
@@ -121,11 +135,10 @@ class HelperUI {
           child: Column(
             children: [
               const SizedBox(height: 16),
-              Text(
-                "Set $title duration (min)",
-                style: Theme.of(
-                  context,
-                ).textTheme.titleLarge?.copyWith(fontWeight: FontWeight.bold),
+              UiText(
+                text: "Set $title duration (min)",
+                type: UiTextType.titleMedium,
+                style: GoogleFonts.roboto(fontWeight: FontWeight.bold),
               ),
               Expanded(
                 child: CupertinoPicker(

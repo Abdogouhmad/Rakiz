@@ -126,12 +126,40 @@ class TimerSettingScreen extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 16),
-                  Slider(
-                    value: config.sessionIntervals.toDouble(),
-                    min: 1,
-                    max: 8,
-                    divisions: 7,
-                    onChanged: (val) => config.setSessionIntervals(val.round()),
+                  SliderTheme(
+                    data: SliderTheme.of(context).copyWith(
+                      trackHeight: 12.0,
+                      trackShape: const RoundedRectSliderTrackShape(),
+                      activeTrackColor: colors.primary,
+                      inactiveTrackColor: colors.surfaceContainerHighest,
+                      thumbColor: colors.onPrimaryContainer,
+
+                      // 5. The Tick Marks (dots on the bar)
+                      tickMarkShape: const RoundSliderTickMarkShape(
+                        tickMarkRadius: 4.0,
+                      ),
+                      activeTickMarkColor: Colors
+                          .transparent, // Hide ticks on the active side for a cleaner look
+                      inactiveTickMarkColor: colors.onSurfaceVariant.withValues(
+                        alpha: 0.4,
+                      ),
+                      valueIndicatorShape:
+                          const PaddleSliderValueIndicatorShape(),
+                      valueIndicatorColor: colors.onPrimaryContainer,
+                      valueIndicatorTextStyle: TextStyle(
+                        color: colors.surface,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                    child: Slider(
+                      value: config.sessionIntervals.toDouble(),
+                      min: 1,
+                      max: 10,
+                      divisions: 9,
+                      label: "${config.sessionIntervals.toInt()} Sessions",
+                      onChanged: (val) =>
+                          config.setSessionIntervals(val.round()),
+                    ),
                   ),
                 ],
               ),

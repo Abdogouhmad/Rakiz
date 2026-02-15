@@ -5,13 +5,13 @@ import 'package:rakiz/core/context.dart';
 class NavBarItem {
   final Widget icon;
   final Widget activeIcon;
-  final String label;
+  final String? label;
   final Widget screen;
 
   NavBarItem({
     required this.icon,
     required this.activeIcon,
-    required this.label,
+    this.label,
     required this.screen,
   });
 }
@@ -38,9 +38,13 @@ class Navbar extends StatelessWidget {
         ? colorScheme.surface.withValues(alpha: 0.5)
         : colorScheme.primaryContainer;
 
-    final containerBk = isDark ? colorScheme.primaryContainer : colorScheme.surfaceContainerHigh;
+    final containerBk = isDark
+        ? colorScheme.primaryContainer
+        : colorScheme.surfaceContainerHigh;
 
-    final activeColor = isDark ? colorScheme.onPrimaryContainer : colorScheme.primary;
+    final activeColor = isDark
+        ? colorScheme.onPrimaryContainer
+        : colorScheme.primary;
     final inactiveColor = colorScheme.onSurfaceVariant;
 
     return Padding(
@@ -70,8 +74,8 @@ class Navbar extends StatelessWidget {
               hoverColor: colorScheme.secondaryContainer.withValues(alpha: 0.5),
 
               gap: 8,
-              
-              // These apply to the text and default icon, but we use them 
+
+              // These apply to the text and default icon, but we use them
               // to guide our custom IconTheme below as well.
               activeColor: activeColor,
               color: inactiveColor, // Inactive color
@@ -95,7 +99,7 @@ class Navbar extends StatelessWidget {
                   // We must provide an icon, but we hide it to use 'leading'
                   icon: Icons.circle_sharp,
                   iconSize: 0,
-                  
+
                   // Wrap custom widgets in IconTheme to enforce color changes
                   leading: IconTheme(
                     data: IconThemeData(
@@ -108,7 +112,7 @@ class Navbar extends StatelessWidget {
                       child: isActive ? item.activeIcon : item.icon,
                     ),
                   ),
-                  text: item.label,
+                  text: item.label ?? "",
                 );
               }).toList(),
             ),

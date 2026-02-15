@@ -28,7 +28,6 @@ class _MyHomePageState extends State<MyHomePage> {
     NavBarItem(
       icon: const Icon(Icons.timer_outlined),
       activeIcon: const Icon(Icons.timer_outlined),
-      label: 'Timer',
       screen: const TimerScreen(),
     ),
     NavBarItem(
@@ -46,15 +45,17 @@ class _MyHomePageState extends State<MyHomePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       extendBody: true,
-      appBar: AppBar(
-        title: UiText(
-          text: _currentIndex == 0 ? "Timer" : "Settings",
-          textAlign: TextAlign.center,
-          type: UiTextType.headlineMedium,
-          style: GoogleFonts.robotoSlab(fontWeight: FontWeight.w600),
-        ),
-        centerTitle: true,
-      ),
+      appBar: _currentIndex == 0
+          ? null
+          : AppBar(
+              title: UiText(
+                text: "Settings", // No need to check index here anymore
+                textAlign: TextAlign.center,
+                type: UiTextType.headlineMedium,
+                style: GoogleFonts.roboto(fontWeight: FontWeight.w600),
+              ),
+              centerTitle: false,
+            ),
       body: SafeArea(
         bottom: false,
         child: IndexedStack(

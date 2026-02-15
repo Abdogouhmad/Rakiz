@@ -172,6 +172,17 @@ class _TimerScreenState extends State<TimerScreen> {
     };
 
     return Scaffold(
+      appBar: AppBar(
+        title: UiText(
+          text: modeLabel,
+          type: UiTextType.headlineLarge,
+          style: GoogleFonts.roboto(
+            fontWeight: FontWeight.w600,
+            color: context.colorScheme.onSurfaceVariant,
+          ),
+        ),
+        centerTitle: true,
+      ),
       body: SafeArea(
         child: LayoutBuilder(
           builder: (context, constraints) {
@@ -184,23 +195,6 @@ class _TimerScreenState extends State<TimerScreen> {
               child: Column(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  // ---------------------------
-                  // Mode label
-                  // ---------------------------
-                  Text(
-                    modeLabel,
-                    style: GoogleFonts.roboto(
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                      color: context.colorScheme.onSurfaceVariant,
-                    ),
-                  ),
-
-                  const SizedBox(height: 16),
-
-                  // ---------------------------
-                  // Timer circle
-                  // ---------------------------
                   TimerCircle(
                     size: circleSize,
                     color: circleColor,
@@ -223,9 +217,10 @@ class _TimerScreenState extends State<TimerScreen> {
                                   backgroundColor: context.colorScheme.primary,
                                 ),
                                 const SizedBox(width: 8),
-                                Text(
-                                  'Timer Running',
-                                  style: TextStyle(
+                                UiText(
+                                  text: 'Timer Running',
+                                  type: UiTextType.labelMedium,
+                                  style: GoogleFonts.roboto(
                                     color: context.colorScheme.primary,
                                     fontWeight: FontWeight.w500,
                                   ),
@@ -238,7 +233,7 @@ class _TimerScreenState extends State<TimerScreen> {
                       text: _timerService.formatTime(_secondsLeft),
                       style: GoogleFonts.robotoSlab(
                         fontWeight: FontWeight.w600,
-                        fontSize: circleSize * 0.25,
+                        fontSize: circleSize * 0.20,
                         color: _timerService.isRunning
                             ? context.colorScheme.onPrimaryContainer
                             : context.colorScheme.primary,
