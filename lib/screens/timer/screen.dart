@@ -50,9 +50,7 @@ class _TimerScreenState extends State<TimerScreen> {
     // 2. Calculate what the duration *should* be based on current settings
     final configDurationInSeconds = config.currentDurationMinutes * 60;
 
-    // 3. If the timer is NOT running and the duration has changed, update immediately.
-    //    This ensures settings changes are reflected instantly without a reset,
-    //    but prevents resetting a timer that is actively counting down.
+    // 3. Update duration if needed
     if (!_timerService.isRunning && _totalSeconds != configDurationInSeconds) {
       _applyConfig(config);
     }
@@ -60,8 +58,16 @@ class _TimerScreenState extends State<TimerScreen> {
 
   @override
   void dispose() {
+    // Stop the timer
     _timerService.stopTimer();
+
+    // Stop listening to alarm events
     _alarmSubscription?.cancel();
+
+    // [DND LOGIC] Ensure DND is turned off if the user leaves the screen
+    // We use read because we are just calling a method, not listening for changes
+    context.read<TimerConfig>().stopDndSession();
+
     super.dispose();
   }
 
@@ -75,11 +81,6 @@ class _TimerScreenState extends State<TimerScreen> {
     _timerService
       ..resetTimer()
       ..setDuration(seconds);
-
-    // Force a rebuild just in case this was called outside the build phase
-    // (though usually unnecessary inside didChangeDependencies, it's safer for async logic)
-    // We check mounted to be safe.
-    // Note: We avoid setState during build, but didChangeDependencies runs before build.
   }
 
   // ---------------------------
@@ -88,19 +89,33 @@ class _TimerScreenState extends State<TimerScreen> {
   Future<void> _toggleTimer() async {
     final config = context.read<TimerConfig>();
 
+    // CASE: PAUSE
     if (_timerService.isRunning) {
       _timerService.stopTimer();
+
+      // [DND LOGIC] Turn off DND when paused
+      await config.stopDndSession();
+
       if (mounted) setState(() {});
       return;
     }
 
     if (_secondsLeft <= 0) return;
 
+    // CASE: START
+    // [DND LOGIC] Turn on DND when timer starts
+    // (The config logic handles checking if it's Focus mode or not)
+    await config.startDndSession();
+
     _timerService.startTimer(
       onTick: (_) {
         if (mounted) setState(() {});
       },
       onFinished: () async {
+        // [DND LOGIC] Turn off DND immediately when finished
+        // This ensures the alarm/notification isn't suppressed
+        await config.stopDndSession();
+
         await AlarmService.scheduleAlarm(id: 1, delay: Duration.zero);
         await NotificationService.notify(
           id: 1,
@@ -144,6 +159,9 @@ class _TimerScreenState extends State<TimerScreen> {
       await AlarmService.stopAlarm();
     }
 
+    // [DND LOGIC] Turn off DND on reset
+    await config.stopDndSession();
+
     _applyConfig(config);
 
     if (mounted) setState(() {});
@@ -151,6 +169,10 @@ class _TimerScreenState extends State<TimerScreen> {
 
   void _resetTimer() {
     final config = context.read<TimerConfig>();
+
+    // [DND LOGIC] Turn off DND on external reset calls
+    config.stopDndSession();
+
     _applyConfig(config);
     if (mounted) setState(() {});
   }

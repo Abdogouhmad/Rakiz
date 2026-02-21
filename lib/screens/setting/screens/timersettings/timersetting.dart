@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:provider/provider.dart';
-
 import 'package:rakiz/screens/setting/screens/timersettings/helper.dart';
 import 'package:rakiz/screens/setting/screens/timersettings/timer_config.dart';
 import 'package:rakiz/ui/custom_text.dart';
@@ -191,8 +190,8 @@ class TimerSettingScreen extends StatelessWidget {
                   context: context,
                   title: 'Do Not Disturb',
                   subtitle: 'Enable DND during focus',
-                  value: false,
-                  onChanged: (_) {},
+                  value: config.enableDndDuringFocus,
+                  onChanged: config.setDndEnabled,
                 ),
               ],
             ),
