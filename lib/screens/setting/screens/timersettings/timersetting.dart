@@ -11,7 +11,7 @@ class TimerSettingScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
-    final textTheme = Theme.of(context).textTheme;
+    // final textTheme = Theme.of(context).textTheme;
 
     final config = context.watch<TimerConfig>();
 
@@ -73,20 +73,6 @@ class TimerSettingScreen extends StatelessWidget {
                   ),
                 ),
               ),
-              const SizedBox(width: 12),
-              Expanded(
-                child: HelperUI.timeCardSimple(
-                  context: context,
-                  title: 'Long break',
-                  value: config.longBreakMinutes,
-                  onTap: () => HelperUI.showDurationPickerSimple(
-                    context: context,
-                    title: 'Long break',
-                    initialValue: config.longBreakMinutes,
-                    onChanged: config.setLongBreak,
-                  ),
-                ),
-              ),
             ],
           ),
           const SizedBox(height: 24),
@@ -94,76 +80,76 @@ class TimerSettingScreen extends StatelessWidget {
           // -------------------------------
           // Session Length
           // -------------------------------
-          HelperUI.sectionCard(
-            context: context,
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Icon(
-                        Icons.timelapse_rounded,
-                        size: 20,
-                        color: colors.onSurfaceVariant,
-                      ),
-                      const SizedBox(width: 10),
-                      Text(
-                        'Session length',
-                        style: textTheme.titleMedium?.copyWith(
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 6),
-                  Text(
-                    'Focus intervals in one session: ${config.sessionIntervals}',
-                    style: textTheme.bodySmall?.copyWith(
-                      color: colors.onSurfaceVariant,
-                    ),
-                  ),
-                  const SizedBox(height: 16),
-                  SliderTheme(
-                    data: SliderTheme.of(context).copyWith(
-                      trackHeight: 12.0,
-                      trackShape: const RoundedRectSliderTrackShape(),
-                      activeTrackColor: colors.primary,
-                      inactiveTrackColor: colors.surfaceContainerHighest,
-                      thumbColor: colors.onPrimaryContainer,
+          // HelperUI.sectionCard(
+          //   context: context,
+          //   child: Padding(
+          //     padding: const EdgeInsets.all(20),
+          //     child: Column(
+          //       crossAxisAlignment: CrossAxisAlignment.start,
+          //       children: [
+          //         Row(
+          //           children: [
+          //             Icon(
+          //               Icons.timelapse_rounded,
+          //               size: 20,
+          //               color: colors.onSurfaceVariant,
+          //             ),
+          //             const SizedBox(width: 10),
+          //             Text(
+          //               'Session length',
+          //               style: textTheme.titleMedium?.copyWith(
+          //                 fontWeight: FontWeight.bold,
+          //               ),
+          //             ),
+          //           ],
+          //         ),
+          //         const SizedBox(height: 6),
+          //         Text(
+          //           'Focus intervals in one session: ${config.sessionIntervals}',
+          //           style: textTheme.bodySmall?.copyWith(
+          //             color: colors.onSurfaceVariant,
+          //           ),
+          //         ),
+          //         const SizedBox(height: 16),
+          //         SliderTheme(
+          //           data: SliderTheme.of(context).copyWith(
+          //             trackHeight: 12.0,
+          //             trackShape: const RoundedRectSliderTrackShape(),
+          //             activeTrackColor: colors.primary,
+          //             inactiveTrackColor: colors.surfaceContainerHighest,
+          //             thumbColor: colors.onPrimaryContainer,
 
-                      // 5. The Tick Marks (dots on the bar)
-                      tickMarkShape: const RoundSliderTickMarkShape(
-                        tickMarkRadius: 4.0,
-                      ),
-                      activeTickMarkColor: Colors
-                          .transparent, // Hide ticks on the active side for a cleaner look
-                      inactiveTickMarkColor: colors.onSurfaceVariant.withValues(
-                        alpha: 0.4,
-                      ),
-                      valueIndicatorShape:
-                          const PaddleSliderValueIndicatorShape(),
-                      valueIndicatorColor: colors.onPrimaryContainer,
-                      valueIndicatorTextStyle: TextStyle(
-                        color: colors.surface,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                    child: Slider(
-                      value: config.sessionIntervals.toDouble(),
-                      min: 1,
-                      max: 10,
-                      divisions: 9,
-                      label: "${config.sessionIntervals.toInt()} Sessions",
-                      onChanged: (val) =>
-                          config.setSessionIntervals(val.round()),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
+          //             // 5. The Tick Marks (dots on the bar)
+          //             tickMarkShape: const RoundSliderTickMarkShape(
+          //               tickMarkRadius: 4.0,
+          //             ),
+          //             activeTickMarkColor: Colors
+          //                 .transparent, // Hide ticks on the active side for a cleaner look
+          //             inactiveTickMarkColor: colors.onSurfaceVariant.withValues(
+          //               alpha: 0.4,
+          //             ),
+          //             valueIndicatorShape:
+          //                 const PaddleSliderValueIndicatorShape(),
+          //             valueIndicatorColor: colors.onPrimaryContainer,
+          //             valueIndicatorTextStyle: TextStyle(
+          //               color: colors.surface,
+          //               fontWeight: FontWeight.bold,
+          //             ),
+          //           ),
+          //           child: Slider(
+          //             value: config.sessionIntervals.toDouble(),
+          //             min: 1,
+          //             max: 10,
+          //             divisions: 9,
+          //             label: "${config.sessionIntervals.toInt()} Sessions",
+          //             onChanged: (val) =>
+          //                 config.setSessionIntervals(val.round()),
+          //           ),
+          //         ),
+          //       ],
+          //     ),
+          //   ),
+          // ),
           const SizedBox(height: 24),
 
           // -------------------------------
@@ -173,19 +159,19 @@ class TimerSettingScreen extends StatelessWidget {
             context: context,
             child: Column(
               children: [
-                HelperUI.switchTileSimple(
-                  context: context,
-                  title: 'Auto start next timer',
-                  subtitle: 'Start next timer automatically',
-                  value: config.autoStartNext,
-                  onChanged: config.setAutoStart,
-                ),
-                Divider(
-                  height: 1,
-                  indent: 20,
-                  endIndent: 20,
-                  color: colors.outlineVariant,
-                ),
+                // HelperUI.switchTileSimple(
+                //   context: context,
+                //   title: 'Auto start next timer',
+                //   subtitle: 'Start next timer automatically',
+                //   value: config.autoStartNext,
+                //   onChanged: config.setAutoStart,
+                // ),
+                // Divider(
+                //   height: 1,
+                //   indent: 20,
+                //   endIndent: 20,
+                //   color: colors.outlineVariant,
+                // ),
                 HelperUI.switchTileSimple(
                   context: context,
                   title: 'Do Not Disturb',
