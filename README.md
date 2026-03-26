@@ -15,7 +15,7 @@ By leveraging Flutter’s optimization and modern Material 3 design, Rakiz deliv
 ---
 ## Screenshot
 
-<img src="./assets/screenshots/screenshots.png" alt="Rakiz in screenshots" width="200" height="200">
+<img src="./assets/screenshots/screenshots.png" alt="Rakiz in screenshots" width="250" height="600">
 
 ---
 
