@@ -13,10 +13,15 @@ Rakiz was designed with one goal in mind:
 By leveraging Flutter’s optimization and modern Material 3 design, Rakiz delivers a smooth, responsive, and visually clean experience while staying lightweight and functional.
 
 ---
-## Screenshot
+## 📸 Screenshots
 
-<img src="./assets/screenshots/screenshots.png" alt="Rakiz in screenshots" width="250" height="600">
+| Home (Focus) | Home (Break) |
+|:---:|:---:|
+| ![Home Focus](assets/screenshots/HomeFocus.png) | ![Home Break](assets/screenshots/HomeBreak.png) |
 
+| About | Settings |
+|:---:|:---:|
+| ![About](assets/screenshots/About.png) | ![Settings](assets/screenshots/Settings.png) |
 ---
 
 ## Features
