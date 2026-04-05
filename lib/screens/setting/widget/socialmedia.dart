@@ -3,14 +3,10 @@ import 'package:font_awesome_flutter/font_awesome_flutter.dart';
 import 'package:url_launcher/url_launcher.dart';
 
 class SocialBubble extends StatelessWidget {
-  final IconData icon;
+  final dynamic icon;
   final String url;
 
-  const SocialBubble({
-    super.key,
-    required this.icon,
-    required this.url,
-  });
+  const SocialBubble({super.key, required this.icon, required this.url});
 
   Future<void> _openLink() async {
     final uri = Uri.parse(url);
@@ -22,6 +18,9 @@ class SocialBubble extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final colors = Theme.of(context).colorScheme;
+    final Widget resolvedIcon = icon is IconData
+        ? Icon(icon, size: 18, color: colors.onPrimaryContainer)
+        : FaIcon(icon, size: 18, color: colors.onPrimaryContainer);
 
     return Material(
       color: Colors.transparent,
@@ -35,11 +34,7 @@ class SocialBubble extends StatelessWidget {
             color: colors.primaryContainer,
             shape: BoxShape.circle,
           ),
-          child: FaIcon(
-            icon,
-            size: 18,
-            color: colors.onPrimaryContainer,
-          ),
+          child: resolvedIcon,
         ),
       ),
     );

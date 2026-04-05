@@ -35,7 +35,7 @@ get:
 	@echo "Getting dependencies..."
 	$(FLUTTER) pub get
 
-.PHONY: upgrade
+.PHONY: upgrade 
 upgrade:
 	@echo "Upgrading dependencies..."
 	$(FLUTTER) pub upgrade

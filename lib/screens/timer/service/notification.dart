@@ -30,7 +30,7 @@ class NotificationService {
     );
 
     await _plugin.initialize(
-      initSettings,
+      settings: initSettings,
       onDidReceiveNotificationResponse: _onNotificationTap,
       onDidReceiveBackgroundNotificationResponse: _onNotificationTap,
     );
@@ -110,7 +110,12 @@ class NotificationService {
       ),
     );
 
-    await _plugin.show(id, title, body, details);
+    await _plugin.show(
+      id: id,
+      title: title,
+      body: body,
+      notificationDetails: details,
+    );
   }
 
   /// Schedule notification (ANDROID ONLY)
@@ -128,18 +133,20 @@ class NotificationService {
     final scheduleTime = tz.TZDateTime.now(tz.local).add(delay);
 
     await _plugin.zonedSchedule(
-      id,
-      title,
-      body,
-      scheduleTime,
-      NotificationDetails(android: _androidDetails(isAlarm: true)),
+      id: id,
+      title: title,
+      body: body,
+      scheduledDate: scheduleTime,
+      notificationDetails: NotificationDetails(
+        android: _androidDetails(isAlarm: true),
+      ),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
   }
 
   /// Cancel one notification
   static Future<void> cancel(int id) async {
-    await _plugin.cancel(id);
+    await _plugin.cancel(id: id);
   }
 
   /// Cancel all notifications

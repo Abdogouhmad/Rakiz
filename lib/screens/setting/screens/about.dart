@@ -78,7 +78,7 @@ class AboutScreen extends StatelessWidget {
                 ),
                 const SizedBox(width: 8),
                 SocialBubble(
-                  icon: FontAwesomeIcons.github,
+                  icon: Icons.code,
                   url: "https://github.com/Abdogouhmad/Rakiz/",
                 ),
               ],
